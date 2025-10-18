@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Star, Users, Award, Heart, Music, Zap, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Star, Users, Award, Heart, Music, Zap, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -13,7 +13,6 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
 const HomePage = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Datos del carrusel de banners
   const banners = [
@@ -351,7 +350,7 @@ const HomePage = () => {
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-gray-600 mb-6 italic">&ldquo;{testimonial.content}&rdquo;</p>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold mr-4">
                     {testimonial.name.charAt(0)}
