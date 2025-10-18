@@ -63,7 +63,14 @@ const DebugUsersPage = () => {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          const userData = {
+          const userData: {
+            id: string;
+            email: string;
+            name: string;
+            role: string;
+            createdAt: string;
+            hasAvatar: boolean;
+          } = {
             id: doc.id,
             email: data.email || 'Sin email',
             name: data.name || 'Sin nombre',
@@ -71,7 +78,7 @@ const DebugUsersPage = () => {
             createdAt: data.createdAt?.toDate()?.toISOString() || 'Sin fecha',
             hasAvatar: !!data.avatar
           };
-          diagnostics.usersCollection.users.push(userData);
+          (diagnostics.usersCollection.users as any[]).push(userData);
         });
 
         console.log('Diagnóstico completado:', diagnostics);
