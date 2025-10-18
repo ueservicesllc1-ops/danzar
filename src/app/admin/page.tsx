@@ -444,12 +444,12 @@ const AdminDashboard = () => {
             transition: 'all 0.2s'
           }}
           onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#3b82f6';
-            e.target.style.color = 'white';
+            (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+            (e.target as HTMLButtonElement).style.color = 'white';
           }}
           onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'transparent';
-            e.target.style.color = '#3b82f6';
+            (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.target as HTMLButtonElement).style.color = '#3b82f6';
           }}>
             Ver Todas las Actividades
           </button>

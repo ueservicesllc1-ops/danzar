@@ -51,20 +51,25 @@ export default function AdminLoginPage() {
       } else {
         setError('Usuario no encontrado en la base de datos.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error en login:', error);
       
       // Manejar errores específicos de Firebase
-      if (error.code === 'auth/user-not-found') {
-        setError('No existe una cuenta con este correo electrónico.');
-      } else if (error.code === 'auth/wrong-password') {
-        setError('La contraseña es incorrecta.');
-      } else if (error.code === 'auth/invalid-email') {
-        setError('El correo electrónico no es válido.');
-      } else if (error.code === 'auth/too-many-requests') {
-        setError('Demasiados intentos fallidos. Intenta más tarde.');
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        if (firebaseError.code === 'auth/user-not-found') {
+          setError('No existe una cuenta con este correo electrónico.');
+        } else if (firebaseError.code === 'auth/wrong-password') {
+          setError('La contraseña es incorrecta.');
+        } else if (firebaseError.code === 'auth/invalid-email') {
+          setError('El correo electrónico no es válido.');
+        } else if (firebaseError.code === 'auth/too-many-requests') {
+          setError('Demasiados intentos fallidos. Intenta más tarde.');
+        } else {
+          setError(firebaseError.message || 'Error al iniciar sesión');
+        }
       } else {
-        setError(error.message || 'Error al iniciar sesión');
+        setError('Error al iniciar sesión. Intenta nuevamente.');
       }
     } finally {
       setLoading(false);

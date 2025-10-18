@@ -45,17 +45,22 @@ export default function AdminSetupPage() {
         router.push('/admin/login');
       }, 2000);
 
-    } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        // El usuario ya existe, intentar iniciar sesión para verificar
-        try {
-          await signInWithEmailAndPassword(auth, 'luisuf@gmail.com', 'developer123');
-          setSuccess('✅ Usuario desarrollador ya existe y está configurado correctamente!');
-        } catch (signInError: any) {
-          setError('El usuario ya existe pero la contraseña es incorrecta. Contacta al administrador.');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        if (firebaseError.code === 'auth/email-already-in-use') {
+          // El usuario ya existe, intentar iniciar sesión para verificar
+          try {
+            await signInWithEmailAndPassword(auth, 'luisuf@gmail.com', 'developer123');
+            setSuccess('✅ Usuario desarrollador ya existe y está configurado correctamente!');
+          } catch (signInError: unknown) {
+            setError('El usuario ya existe pero la contraseña es incorrecta. Contacta al administrador.');
+          }
+        } else {
+          setError(`Error: ${firebaseError.message || 'Error desconocido'}`);
         }
       } else {
-        setError(`Error: ${error.message}`);
+        setError('Error desconocido al crear el usuario');
       }
     } finally {
       setLoading(false);

@@ -264,10 +264,10 @@ const AdminClassesPage = () => {
               transition: 'background-color 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#059669';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#059669';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#10b981';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#10b981';
             }}>
               + Nueva Clase
             </button>
@@ -286,10 +286,10 @@ const AdminClassesPage = () => {
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#f3f4f6';
+                (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
+                (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
               }}
             >
               ← Volver al Panel
@@ -372,10 +372,10 @@ const AdminClassesPage = () => {
                 outline: 'none'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
+                (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
+                (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
             />
           </div>
@@ -695,10 +695,10 @@ const AdminClassesPage = () => {
                 transition: 'background-color 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#2563eb';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#3b82f6';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
               }}>
                 Editar
               </button>
@@ -716,10 +716,10 @@ const AdminClassesPage = () => {
                 transition: 'background-color 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = danceClass.status === 'active' ? '#dc2626' : '#059669';
+                (e.target as HTMLButtonElement).style.backgroundColor = danceClass.status === 'active' ? '#dc2626' : '#059669';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = danceClass.status === 'active' ? '#ef4444' : '#10b981';
+                (e.target as HTMLButtonElement).style.backgroundColor = danceClass.status === 'active' ? '#ef4444' : '#10b981';
               }}>
                 {danceClass.status === 'active' ? 'Desactivar' : 'Activar'}
               </button>

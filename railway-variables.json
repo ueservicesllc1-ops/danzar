@@ -1,0 +1,45 @@
+{
+  "variables": {
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyBT5G_4SWXxLKDoCWqxTSVxWUGgWMbNwLw",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "clonetoast.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "clonetoast",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "clonetoast.firebasestorage.app",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "559318580715",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:559318580715:web:9343b75464f579d9962dae",
+    "NEXT_PUBLIC_APP_URL": "https://danzar.art",
+    "NEXT_PUBLIC_APP_NAME": "DanZar",
+    "BACKBLAZE_KEY_ID": "005c2b526be0baa0000000018",
+    "BACKBLAZE_APPLICATION_KEY": "K005qruZtIRrrVLiHSIGroEu1ikeVvU",
+    "BACKBLAZE_REGION": "us-east-005",
+    "BACKBLAZE_ENDPOINT": "https://s3.us-east-005.backblazeb2.com",
+    "BACKBLAZE_BUCKET_NAME": "danzar",
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  },
+  "description": "Variables de entorno para Railway - Danzar Dance Studio",
+  "domain": "danzar.art",
+  "instructions": {
+    "setup": [
+      "1. Copia estas variables a Railway",
+      "2. Reemplaza 'your_backblaze_key_id' y 'your_backblaze_application_key' con tus credenciales reales de Backblaze B2",
+      "3. Configura el dominio personalizado como 'danzar.art' en Railway",
+      "4. Asegúrate de que Firebase esté configurado para aceptar el dominio 'danzar.art'"
+    ],
+    "firebase_setup": [
+      "Agrega 'danzar.art' a los dominios autorizados en Firebase Auth",
+      "Configura las reglas de Firestore para producción",
+      "Verifica que el storage bucket esté configurado correctamente"
+    ],
+    "backblaze_setup": [
+      "Crea una cuenta en Backblaze B2",
+      "Genera las claves de API",
+      "Configura el bucket para almacenar imágenes y archivos"
+    ]
+  },
+  "railway_config": {
+    "build_command": "npm run build",
+    "start_command": "npm start",
+    "node_version": "18.x",
+    "framework": "nextjs"
+  }
+}

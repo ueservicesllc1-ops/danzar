@@ -46,24 +46,27 @@ export default function LoginPage() {
         // Usuario no existe en Firestore, redirigir a completar perfil
         router.push('/profile/setup');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = 'Error al iniciar sesión';
       
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No existe una cuenta con este correo electrónico';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Contraseña incorrecta';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Correo electrónico inválido';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Demasiados intentos fallidos. Intenta más tarde';
-          break;
-        default:
-          errorMessage = error.message || 'Error al iniciar sesión';
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        switch (firebaseError.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'No existe una cuenta con este correo electrónico';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Contraseña incorrecta';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Correo electrónico inválido';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Demasiados intentos fallidos. Intenta más tarde';
+            break;
+          default:
+            errorMessage = firebaseError.message || 'Error al iniciar sesión';
+        }
       }
       
       setError(errorMessage);

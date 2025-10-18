@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { CreditCard, AlertTriangle, CheckCircle } from 'lucide-react';
+import { CreditCard, AlertTriangle } from 'lucide-react';
 
 interface Payment {
   id: string;

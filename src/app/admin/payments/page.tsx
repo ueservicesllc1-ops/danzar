@@ -31,8 +31,6 @@ const AdminPaymentsPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<Payment | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

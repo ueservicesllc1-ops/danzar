@@ -74,18 +74,23 @@ export default function RegisterPage() {
       });
 
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error en registro:', error);
       
       // Manejar errores específicos de Firebase
-      if (error.code === 'auth/email-already-in-use') {
-        setError('Este correo electrónico ya está registrado. ¿Ya tienes cuenta? Inicia sesión.');
-      } else if (error.code === 'auth/weak-password') {
-        setError('La contraseña es muy débil. Usa al menos 6 caracteres.');
-      } else if (error.code === 'auth/invalid-email') {
-        setError('El correo electrónico no es válido.');
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        if (firebaseError.code === 'auth/email-already-in-use') {
+          setError('Este correo electrónico ya está registrado. ¿Ya tienes cuenta? Inicia sesión.');
+        } else if (firebaseError.code === 'auth/weak-password') {
+          setError('La contraseña es muy débil. Usa al menos 6 caracteres.');
+        } else if (firebaseError.code === 'auth/invalid-email') {
+          setError('El correo electrónico no es válido.');
+        } else {
+          setError(firebaseError.message || 'Error al crear la cuenta');
+        }
       } else {
-        setError(error.message || 'Error al crear la cuenta');
+        setError('Error al crear la cuenta');
       }
     } finally {
       setLoading(false);
