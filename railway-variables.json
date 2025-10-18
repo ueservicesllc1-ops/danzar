@@ -14,7 +14,8 @@
     "BACKBLAZE_ENDPOINT": "https://s3.us-east-005.backblazeb2.com",
     "BACKBLAZE_BUCKET_NAME": "danzar",
     "NODE_ENV": "production",
-    "PORT": "3000"
+    "PORT": "3000",
+    "NEXT_TELEMETRY_DISABLED": "1"
   },
   "description": "Variables de entorno para Railway - Danzar Dance Studio",
   "domain": "danzar.art",
