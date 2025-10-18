@@ -268,10 +268,10 @@ const AdminPaymentsPage = () => {
                 transition: 'background-color 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#059669';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#059669';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#10b981';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#10b981';
               }}
             >
               <Calendar size={16} style={{ marginRight: '8px' }} />
