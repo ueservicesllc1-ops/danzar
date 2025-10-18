@@ -20,29 +20,48 @@ const SetupAdminPage = () => {
     setSuccess('');
 
     try {
+      // Crear IDs únicos para los administradores
+      const isaiId = 'admin-isai-macho';
+      const luisId = 'developer-luis-uf';
+
       // Configurar isai.macho@gmail.com como admin
       const isaiUser = {
-        id: 'isai-admin',
+        id: isaiId,
         email: 'isai.macho@gmail.com',
         name: 'Isai Macho',
         role: 'admin',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        uid: isaiId
       };
 
       // Configurar luisuf@gmail.com como developer
       const luisUser = {
-        id: 'luis-developer',
+        id: luisId,
         email: 'luisuf@gmail.com',
         name: 'Luis Developer',
         role: 'developer',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        uid: luisId
       };
 
-      // Crear documentos en Firestore
-      await setDoc(doc(db, 'users', 'isai-admin'), isaiUser);
-      await setDoc(doc(db, 'users', 'luis-developer'), luisUser);
+      // Crear documentos en Firestore con manejo de errores
+      try {
+        await setDoc(doc(db, 'users', isaiId), isaiUser);
+        console.log('Usuario isai configurado correctamente');
+      } catch (isaiError) {
+        console.error('Error configurando isai:', isaiError);
+        throw new Error('Error al configurar usuario isai.macho@gmail.com');
+      }
+
+      try {
+        await setDoc(doc(db, 'users', luisId), luisUser);
+        console.log('Usuario luis configurado correctamente');
+      } catch (luisError) {
+        console.error('Error configurando luis:', luisError);
+        throw new Error('Error al configurar usuario luisuf@gmail.com');
+      }
 
       setSuccess('Usuarios administradores configurados correctamente!');
       
@@ -52,7 +71,7 @@ const SetupAdminPage = () => {
 
     } catch (error) {
       console.error('Error configurando administradores:', error);
-      setError('Error al configurar los usuarios administradores');
+      setError(error instanceof Error ? error.message : 'Error al configurar los usuarios administradores');
     } finally {
       setLoading(false);
     }
