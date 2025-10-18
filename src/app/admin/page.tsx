@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { User, CreditCard, Music, Settings, Shield, Zap, Circle } from 'lucide-react';
+import { User, CreditCard, Music, Settings, Shield, Zap, Circle, Users } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -60,8 +60,8 @@ const AdminDashboard = () => {
     {
       title: 'Gestión de Usuarios',
       description: 'Administrar estudiantes e instructores',
-      icon: '👥',
-      link: '/admin/users',
+      icon: <Users size={24} />,
+      link: '/admin/manage-users',
       color: '#3b82f6'
     },
     {
