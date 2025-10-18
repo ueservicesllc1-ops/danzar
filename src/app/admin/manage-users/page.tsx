@@ -45,13 +45,29 @@ const ManageUsersPage = () => {
       const usersData: UserData[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
+        
+        // Manejar fechas de forma segura
+        const getDate = (dateField: any) => {
+          if (!dateField) return new Date();
+          if (dateField.toDate && typeof dateField.toDate === 'function') {
+            return dateField.toDate();
+          }
+          if (dateField instanceof Date) {
+            return dateField;
+          }
+          if (typeof dateField === 'string') {
+            return new Date(dateField);
+          }
+          return new Date();
+        };
+        
         usersData.push({
           id: doc.id,
           email: data.email || '',
           name: data.name || 'Sin nombre',
           role: data.role || 'student',
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date(),
+          createdAt: getDate(data.createdAt),
+          updatedAt: getDate(data.updatedAt),
           avatar: data.avatar || ''
         });
       });
