@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function AdminLayout({
@@ -12,10 +12,11 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Solo verificar permisos si no estamos en las páginas de login, setup, check-role o pin
-    if (!loading && !window.location.pathname.includes('/admin/login') && !window.location.pathname.includes('/admin/setup') && !window.location.pathname.includes('/admin/check-role') && !window.location.pathname.includes('/admin/pin')) {
+    if (!loading && !pathname.includes('/admin/login') && !pathname.includes('/admin/setup') && !pathname.includes('/admin/check-role') && !pathname.includes('/admin/pin')) {
       if (!user) {
         router.push('/auth/login');
         return;
@@ -26,7 +27,7 @@ export default function AdminLayout({
         return;
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   if (loading) {
     return (
@@ -54,7 +55,7 @@ export default function AdminLayout({
   }
 
   // Solo mostrar contenido protegido si no estamos en login, setup, check-role o pin
-  if (!window.location.pathname.includes('/admin/login') && !window.location.pathname.includes('/admin/setup') && !window.location.pathname.includes('/admin/check-role') && !window.location.pathname.includes('/admin/pin')) {
+  if (!pathname.includes('/admin/login') && !pathname.includes('/admin/setup') && !pathname.includes('/admin/check-role') && !pathname.includes('/admin/pin')) {
     if (!user || (user.role !== 'admin' && user.role !== 'developer')) {
       return null;
     }
