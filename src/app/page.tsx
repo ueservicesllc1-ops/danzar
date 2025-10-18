@@ -130,25 +130,25 @@ const HomePage = () => {
                 <div className="absolute inset-0 bg-black/20"></div>
                 
                 {/* Contenido del banner */}
-                <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+                <div className="relative z-10 max-w-6xl mx-auto px-8 sm:px-12 lg:px-16 text-center">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="space-y-8"
+                    className="space-y-12"
                   >
                     {/* Logo */}
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.6, delay: 0.4 }}
-                      className="flex justify-center mb-8"
+                      className="flex justify-center mb-12"
                     >
                       <Image
                         src={banner.image}
                         alt="DanZar Logo"
-                        width={300}
-                        height={300}
+                        width={250}
+                        height={250}
                         className="object-contain drop-shadow-2xl"
                       />
                     </motion.div>
@@ -158,7 +158,7 @@ const HomePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.6 }}
-                      className={`text-5xl md:text-7xl font-bold ${banner.textColor} mb-4`}
+                      className={`text-4xl md:text-6xl lg:text-7xl font-bold ${banner.textColor} mb-6 leading-tight`}
                     >
                       {banner.title}
                     </motion.h1>
@@ -168,7 +168,7 @@ const HomePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.8 }}
-                      className={`text-2xl md:text-3xl font-semibold ${banner.textColor} mb-6`}
+                      className={`text-xl md:text-2xl lg:text-3xl font-semibold ${banner.textColor} mb-8`}
                     >
                       {banner.subtitle}
                     </motion.h2>
@@ -178,7 +178,7 @@ const HomePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 1 }}
-                      className={`text-lg md:text-xl ${banner.textColor} mb-8 max-w-3xl mx-auto`}
+                      className={`text-lg md:text-xl ${banner.textColor} mb-12 max-w-4xl mx-auto leading-relaxed`}
                     >
                       {banner.description}
                     </motion.p>
@@ -188,6 +188,7 @@ const HomePage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 1.2 }}
+                      className="flex justify-center"
                     >
                       <Link href="/gallery">
                         <Button 
@@ -232,24 +233,24 @@ const HomePage = () => {
       </section>
 
       {/* Estadísticas Animadas */}
-      <section className="py-20 bg-gradient-to-r from-gray-900 to-gray-800">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+      <section className="py-24 bg-gradient-to-r from-gray-900 to-gray-800">
+        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Números que Hablan
             </h2>
-            <p className="text-xl text-gray-300">
+            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
               La confianza de nuestra comunidad se refleja en estos números
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
@@ -279,24 +280,24 @@ const HomePage = () => {
       </section>
 
       {/* Características Principales */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               ¿Por qué elegir DanZar?
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Somos más que una academia de danza, somos una familia que comparte la pasión por el arte del movimiento.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -318,24 +319,24 @@ const HomePage = () => {
       </section>
 
       {/* Testimonios */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+      <section className="py-24 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               Lo que dicen nuestros estudiantes
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
               Historias reales de transformación y crecimiento
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={index}
@@ -367,7 +368,7 @@ const HomePage = () => {
       </section>
 
       {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
         {/* Elementos decorativos */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent via-white/10 to-transparent"></div>
@@ -392,21 +393,21 @@ const HomePage = () => {
           ))}
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+        <div className="relative z-10 max-w-5xl mx-auto px-8 sm:px-12 lg:px-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8">
               ¿Listo para comenzar tu viaje?
             </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
               Únete a nuestra comunidad y descubre el bailarín que llevas dentro. 
               Tu historia de danza comienza aquí.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-8">
               <Link href="/gallery">
                 <Button 
                   size="lg" 
