@@ -40,8 +40,7 @@ const ManageUsersPage = () => {
 
     try {
       const usersRef = collection(db, 'users');
-      const q = query(usersRef, orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(usersRef);
       
       const usersData: UserData[] = [];
       querySnapshot.forEach((doc) => {
@@ -57,10 +56,14 @@ const ManageUsersPage = () => {
         });
       });
 
+      // Ordenar por fecha de creación (más recientes primero)
+      usersData.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
       setUsers(usersData);
+      console.log('Usuarios cargados:', usersData.length);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setError('Error al cargar los usuarios');
+      setError('Error al cargar los usuarios. Verifica la conexión a Firebase.');
     } finally {
       setLoading(false);
     }
@@ -87,11 +90,20 @@ const ManageUsersPage = () => {
         )
       );
 
-      setSuccess(`Rol actualizado a ${newRole}`);
+      const roleLabels = {
+        'admin': 'Administrador',
+        'developer': 'Desarrollador', 
+        'teacher': 'Profesor',
+        'student': 'Estudiante'
+      };
+
+      setSuccess(`Rol actualizado a ${roleLabels[newRole as keyof typeof roleLabels] || newRole}`);
       setTimeout(() => setSuccess(''), 3000);
+      
+      console.log(`Usuario ${userId} actualizado a rol: ${newRole}`);
     } catch (error) {
       console.error('Error updating user role:', error);
-      setError('Error al actualizar el rol del usuario');
+      setError(`Error al actualizar el rol del usuario: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setUpdating(null);
     }
