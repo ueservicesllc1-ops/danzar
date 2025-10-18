@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Database, Users, AlertCircle, CheckCircle, RefreshCw, Shield } from 'lucide-react';
 
@@ -11,18 +11,32 @@ const DebugUsersPage = () => {
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    timestamp: string;
+    currentUser: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+    } | null;
+    firebaseConnection: boolean;
+    usersCollection: {
+      exists: boolean;
+      count: number;
+      users: {
+        id: string;
+        email: string;
+        name: string;
+        role: string;
+        createdAt: string;
+        hasAvatar: boolean;
+      }[];
+    };
+    errors: string[];
+  } | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'developer')) {
-      runDiagnostics();
-    } else {
-      router.push('/admin/login');
-    }
-  }, [currentUser, router]);
-
-  const runDiagnostics = async () => {
+  const runDiagnostics = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -49,14 +63,15 @@ const DebugUsersPage = () => {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          diagnostics.usersCollection.users.push({
+          const userData = {
             id: doc.id,
             email: data.email || 'Sin email',
             name: data.name || 'Sin nombre',
             role: data.role || 'student',
             createdAt: data.createdAt?.toDate()?.toISOString() || 'Sin fecha',
             hasAvatar: !!data.avatar
-          });
+          };
+          diagnostics.usersCollection.users.push(userData);
         });
 
         console.log('Diagnóstico completado:', diagnostics);
@@ -72,7 +87,15 @@ const DebugUsersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'developer')) {
+      runDiagnostics();
+    } else {
+      router.push('/admin/login');
+    }
+  }, [currentUser, router, runDiagnostics]);
 
   if (loading) {
     return (
@@ -261,7 +284,14 @@ const DebugUsersPage = () => {
                     Lista de Usuarios:
                   </h4>
                   <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    {debugInfo.usersCollection.users.map((user: any, index: number) => (
+                    {debugInfo.usersCollection.users.map((user: {
+                      id: string;
+                      email: string;
+                      name: string;
+                      role: string;
+                      createdAt: string;
+                      hasAvatar: boolean;
+                    }, index: number) => (
                       <div
                         key={index}
                         style={{
