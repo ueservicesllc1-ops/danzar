@@ -78,7 +78,7 @@ const DebugUsersPage = () => {
             createdAt: data.createdAt?.toDate()?.toISOString() || 'Sin fecha',
             hasAvatar: !!data.avatar
           };
-          (diagnostics.usersCollection.users as any[]).push(userData);
+          diagnostics.usersCollection.users.push(userData);
         });
 
         console.log('Diagnóstico completado:', diagnostics);
