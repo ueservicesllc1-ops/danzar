@@ -61,9 +61,16 @@ const ManageUsersPage = () => {
 
       setUsers(usersData);
       console.log('Usuarios cargados:', usersData.length);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching users:', error);
-      setError('Error al cargar los usuarios. Verifica la conexión a Firebase.');
+      
+      if (error.code === 'permission-denied') {
+        setError('No tienes permisos para acceder a los usuarios. Contacta al administrador.');
+      } else if (error.code === 'unavailable') {
+        setError('Firebase no está disponible. Intenta más tarde.');
+      } else {
+        setError('Error al cargar los usuarios. Verifica la conexión a Firebase.');
+      }
     } finally {
       setLoading(false);
     }
