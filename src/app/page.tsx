@@ -81,23 +81,15 @@ const HomePage = () => {
 
             <motion.div 
               variants={itemVariants}
-              className="flex flex-col sm:flex-row justify-center items-center gap-4"
+              className="flex justify-center items-center"
             >
-              <Link href="/auth/login">
-                <Button 
-                  size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  Iniciar Sesión
-                </Button>
-              </Link>
-              <Link href="/auth/register">
+              <Link href="/gallery">
                 <Button 
                   size="lg" 
                   className="gradient-bg hover:shadow-lg text-xl px-10 py-8 group text-white font-semibold"
                 >
                   <Sparkles className="mr-3 h-6 w-6" />
-                  Comenzar Ahora
+                  Ver Galería
                   <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -191,21 +183,13 @@ const HomePage = () => {
             <p className="text-xl text-blue-100 mb-8">
               Únete a nuestra comunidad y descubre el bailarín que llevas dentro.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link href="/auth/login">
+            <div className="flex justify-center items-center">
+              <Link href="/gallery">
                 <Button 
                   size="lg" 
                   className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  Iniciar Sesión
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button 
-                  size="lg" 
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 font-semibold rounded-lg transition-all duration-300"
-                >
-                  Registrarse Gratis
+                  Explorar Nuestra Galería
                 </Button>
               </Link>
             </div>
