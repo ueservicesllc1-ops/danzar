@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase';
 const TestUsersPage = () => {
   const { user: currentUser } = useAuth();
   const router = useRouter();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,7 +33,7 @@ const TestUsersPage = () => {
       console.log('📊 QuerySnapshot size:', querySnapshot.size);
       console.log('📊 QuerySnapshot empty:', querySnapshot.empty);
       
-      const usersData: any[] = [];
+      const usersData: unknown[] = [];
       querySnapshot.forEach((doc) => {
         console.log('👤 Usuario encontrado:', doc.id, doc.data());
         usersData.push({
@@ -44,9 +44,9 @@ const TestUsersPage = () => {
 
       setUsers(usersData);
       console.log('✅ Usuarios cargados:', usersData.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Error fetching users:', error);
-      setError(`Error: ${error.message || 'Error desconocido'}`);
+      setError(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }

@@ -47,10 +47,13 @@ const ManageUsersPage = () => {
         const data = doc.data();
         
         // Manejar fechas de forma segura
-        const getDate = (dateField: any) => {
+        const getDate = (dateField: unknown) => {
           if (!dateField) return new Date();
-          if (dateField.toDate && typeof dateField.toDate === 'function') {
-            return dateField.toDate();
+          if (dateField && typeof dateField === 'object' && 'toDate' in dateField) {
+            const timestamp = dateField as { toDate: () => Date };
+            if (typeof timestamp.toDate === 'function') {
+              return timestamp.toDate();
+            }
           }
           if (dateField instanceof Date) {
             return dateField;
