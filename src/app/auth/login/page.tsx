@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export default function LoginPage() {
@@ -69,6 +69,55 @@ export default function LoginPage() {
         }
       }
       
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      
+      // Verificar si el usuario ya existe en Firestore
+      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+      
+      if (!userDoc.exists()) {
+        // Crear documento de usuario en Firestore si no existe
+        const userData = {
+          id: result.user.uid,
+          email: result.user.email || '',
+          name: result.user.displayName || '',
+          avatar: result.user.photoURL || '',
+          role: 'student',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        await setDoc(doc(db, 'users', result.user.uid), userData);
+      }
+      
+      // Redirigir al dashboard
+      router.push('/dashboard');
+    } catch (error: unknown) {
+      let errorMessage = 'Error al iniciar sesión con Google';
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        switch (firebaseError.code) {
+          case 'auth/popup-closed-by-user':
+            errorMessage = 'Inicio de sesión cancelado';
+            break;
+          case 'auth/popup-blocked':
+            errorMessage = 'Popup bloqueado. Permite ventanas emergentes';
+            break;
+          default:
+            errorMessage = firebaseError.message || 'Error al iniciar sesión con Google';
+        }
+      }
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -211,6 +260,77 @@ export default function LoginPage() {
             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
+
+        {/* Divider */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          margin: '20px 0',
+          color: '#6b7280'
+        }}>
+          <div style={{
+            flex: 1,
+            height: '1px',
+            backgroundColor: '#e5e7eb'
+          }}></div>
+          <span style={{
+            padding: '0 15px',
+            fontSize: '14px'
+          }}>
+            o
+          </span>
+          <div style={{
+            flex: 1,
+            height: '1px',
+            backgroundColor: '#e5e7eb'
+          }}></div>
+        </div>
+
+        {/* Google Sign In Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          style={{
+            width: '100%',
+            backgroundColor: 'white',
+            color: '#374151',
+            padding: '12px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '#f9fafb';
+              e.currentTarget.style.borderColor = '#9ca3af';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.borderColor = '#d1d5db';
+            }
+          }}
+        >
+          <img 
+            src="https://developers.google.com/identity/images/g-logo.png" 
+            alt="Google" 
+            style={{ 
+              width: '20px', 
+              height: '20px' 
+            }} 
+          />
+          {loading ? 'Iniciando sesión...' : 'Continuar con Google'}
+        </button>
 
         {/* Links */}
         <div style={{ textAlign: 'center' }}>
