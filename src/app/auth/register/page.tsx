@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export default function RegisterPage() {
@@ -91,6 +91,52 @@ export default function RegisterPage() {
         }
       } else {
         setError('Error al crear la cuenta');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Verificar si el usuario ya existe en Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (!userDoc.exists()) {
+        // Crear perfil de usuario en Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          email: user.email,
+          role: 'student',
+          createdAt: new Date().toISOString(),
+          provider: 'google'
+        });
+      }
+
+      router.push('/dashboard');
+    } catch (error: unknown) {
+      console.error('Error en registro con Google:', error);
+      
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message?: string };
+        if (firebaseError.code === 'auth/popup-closed-by-user') {
+          setError('Registro cancelado');
+        } else if (firebaseError.code === 'auth/account-exists-with-different-credential') {
+          setError('Ya existe una cuenta con este correo electrónico. Intenta iniciar sesión.');
+        } else {
+          setError(firebaseError.message || 'Error al registrarse con Google');
+        }
+      } else {
+        setError('Error al registrarse con Google');
       }
     } finally {
       setLoading(false);
@@ -427,6 +473,69 @@ export default function RegisterPage() {
                 (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
             />
+          </div>
+
+          {/* Botón de Google */}
+          <button
+            type="button"
+            onClick={handleGoogleSignUp}
+            disabled={loading}
+            style={{
+              width: '100%',
+              backgroundColor: 'white',
+              color: '#374151',
+              padding: '14px',
+              border: '2px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginBottom: '15px',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.borderColor = '#3b82f6';
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#e5e7eb';
+              e.currentTarget.style.backgroundColor = 'white';
+            }}
+          >
+            <img 
+              src="https://developers.google.com/identity/images/g-logo.png" 
+              alt="Google" 
+              style={{ width: '20px', height: '20px' }}
+            />
+            {loading ? 'Registrando...' : 'Registrarse con Google'}
+          </button>
+
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '20px',
+            position: 'relative'
+          }}>
+            <div style={{
+              height: '1px',
+              backgroundColor: '#e5e7eb',
+              width: '100%',
+              position: 'absolute',
+              top: '50%'
+            }} />
+            <span style={{
+              backgroundColor: 'white',
+              padding: '0 15px',
+              color: '#6b7280',
+              fontSize: '14px'
+            }}>
+              o
+            </span>
           </div>
 
           <button
