@@ -186,10 +186,10 @@ const PaymentsPage = () => {
               transition: 'background-color 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#3b82f6';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
             }}
           >
             Iniciar Sesión
@@ -410,10 +410,10 @@ const PaymentsPage = () => {
                         transition: 'background-color 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#2563eb';
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#3b82f6';
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
                       }}
                     >
                       📤 Subir Recibo
@@ -446,10 +446,10 @@ const PaymentsPage = () => {
                         transition: 'background-color 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#dc2626';
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#dc2626';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#ef4444';
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#ef4444';
                       }}
                     >
                       <AlertTriangle size={16} style={{ marginRight: '8px' }} />
@@ -667,10 +667,10 @@ const PaymentsPage = () => {
                     transition: 'all 0.2s'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#f3f4f6';
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
                   }}
                 >
                   Cancelar

@@ -136,10 +136,10 @@ const GalleryPage = () => {
               transition: 'background-color 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#3b82f6';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
             }}
           >
             Iniciar Sesión
@@ -213,10 +213,10 @@ const GalleryPage = () => {
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  (e.target as HTMLButtonElement).style.borderColor = '#3b82f6';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  (e.target as HTMLButtonElement).style.borderColor = '#e5e7eb';
                 }}
               />
               <span style={{
@@ -254,14 +254,14 @@ const GalleryPage = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (selectedFilter !== filter.id) {
-                    e.target.style.backgroundColor = '#f3f4f6';
-                    e.target.style.borderColor = '#d1d5db';
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    (e.target as HTMLButtonElement).style.borderColor = '#d1d5db';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (selectedFilter !== filter.id) {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.borderColor = '#e5e7eb';
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    (e.target as HTMLButtonElement).style.borderColor = '#e5e7eb';
                   }
                 }}
               >
@@ -613,10 +613,10 @@ const GalleryPage = () => {
                   transition: 'background-color 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#2563eb';
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#3b82f6';
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
                 }}>
                   📥 Descargar
                 </button>
@@ -633,10 +633,10 @@ const GalleryPage = () => {
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f3f4f6';
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
+                  (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
                 }}>
                   📤 Compartir
                 </button>

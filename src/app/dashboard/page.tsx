@@ -43,10 +43,10 @@ const DashboardPage = () => {
               transition: 'background-color 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#3b82f6';
+              (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
             }}
           >
             Iniciar Sesión
@@ -119,10 +119,10 @@ const DashboardPage = () => {
                 transition: 'background-color 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#dc2626';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#dc2626';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#ef4444';
+                (e.target as HTMLButtonElement).style.backgroundColor = '#ef4444';
               }}
             >
               Cerrar Sesión

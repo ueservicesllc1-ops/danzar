@@ -49,10 +49,10 @@ export default function Navbar() {
             transition: 'transform 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.05)';
+            (e.target as HTMLElement).style.transform = 'scale(1.05)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
+            (e.target as HTMLElement).style.transform = 'scale(1)';
           }}
         />
       </Link>
@@ -115,10 +115,10 @@ export default function Navbar() {
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#2563eb';
+                        (e.target as HTMLElement).style.backgroundColor = '#2563eb';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#3b82f6';
+                        (e.target as HTMLElement).style.backgroundColor = '#3b82f6';
                       }}>
                         Dashboard
                       </button>
@@ -141,10 +141,10 @@ export default function Navbar() {
                         gap: '4px'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#4b5563';
+                        (e.target as HTMLElement).style.backgroundColor = '#4b5563';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#6b7280';
+                        (e.target as HTMLElement).style.backgroundColor = '#6b7280';
                       }}>
                         <Shield size={16} style={{ marginRight: '4px' }} />
                         Admin
@@ -166,12 +166,12 @@ export default function Navbar() {
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#ef4444';
-                        e.target.style.color = 'white';
+                        (e.target as HTMLElement).style.backgroundColor = '#ef4444';
+                        (e.target as HTMLElement).style.color = 'white';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = 'transparent';
-                        e.target.style.color = '#ef4444';
+                        (e.target as HTMLElement).style.backgroundColor = 'transparent';
+                        (e.target as HTMLElement).style.color = '#ef4444';
                       }}>
                       Salir
                     </button>
@@ -192,10 +192,10 @@ export default function Navbar() {
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#f3f4f6';
+                        (e.target as HTMLElement).style.backgroundColor = '#f3f4f6';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = 'transparent';
+                        (e.target as HTMLElement).style.backgroundColor = 'transparent';
                       }}>
                         Iniciar sesión
                       </button>
@@ -214,10 +214,10 @@ export default function Navbar() {
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#2563eb';
+                        (e.target as HTMLElement).style.backgroundColor = '#2563eb';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#3b82f6';
+                        (e.target as HTMLElement).style.backgroundColor = '#3b82f6';
                       }}>
                         Regístrate
                       </button>

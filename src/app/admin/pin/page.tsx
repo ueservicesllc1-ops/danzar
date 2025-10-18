@@ -122,10 +122,10 @@ export default function AdminPinPage() {
                 outline: 'none'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#ef4444';
+                (e.target as HTMLInputElement).style.borderColor = '#ef4444';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
+                (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
               maxLength={4}
             />

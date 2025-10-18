@@ -198,10 +198,10 @@ export default function RegisterPage() {
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
                 }}
               />
             </div>
@@ -234,10 +234,10 @@ export default function RegisterPage() {
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
                 }}
               />
             </div>
@@ -276,10 +276,10 @@ export default function RegisterPage() {
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
                 }}
               />
             </div>
@@ -312,10 +312,10 @@ export default function RegisterPage() {
                   outline: 'none'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
+                  (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
+                  (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
                 }}
               />
             </div>
@@ -349,10 +349,10 @@ export default function RegisterPage() {
                 outline: 'none'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
+                (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
+                (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
             />
           </div>
@@ -385,10 +385,10 @@ export default function RegisterPage() {
                 outline: 'none'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
+                (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
+                (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
             />
           </div>
@@ -421,10 +421,10 @@ export default function RegisterPage() {
                 outline: 'none'
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
+                (e.target as HTMLInputElement).style.borderColor = '#3b82f6';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
+                (e.target as HTMLInputElement).style.borderColor = '#e5e7eb';
               }}
             />
           </div>

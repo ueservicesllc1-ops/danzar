@@ -75,10 +75,10 @@ export default function Footer() {
               transition: 'transform 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.1)';
+              (e.target as HTMLElement).style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
+              (e.target as HTMLElement).style.transform = 'scale(1)';
             }}>
               f
             </a>
@@ -97,10 +97,10 @@ export default function Footer() {
               transition: 'transform 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.1)';
+              (e.target as HTMLElement).style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
+              (e.target as HTMLElement).style.transform = 'scale(1)';
             }}>
               📷
             </a>
@@ -119,10 +119,10 @@ export default function Footer() {
               transition: 'transform 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.1)';
+              (e.target as HTMLElement).style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
+              (e.target as HTMLElement).style.transform = 'scale(1)';
             }}>
               t
             </a>
@@ -141,10 +141,10 @@ export default function Footer() {
               transition: 'transform 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.1)';
+              (e.target as HTMLElement).style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
+              (e.target as HTMLElement).style.transform = 'scale(1)';
             }}>
               ▶
             </a>
