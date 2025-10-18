@@ -181,23 +181,28 @@ export default function Navbar() {
                     {/* Botones para usuarios no logueados */}
                     <Link href="/auth/login">
                       <button style={{
-                        backgroundColor: 'transparent',
-                        color: '#374151',
-                        padding: '8px 16px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         fontSize: '14px',
                         fontWeight: '600',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)'
                       }}
                       onMouseEnter={(e) => {
-                        (e.target as HTMLElement).style.backgroundColor = '#f3f4f6';
+                        (e.target as HTMLElement).style.backgroundColor = '#2563eb';
+                        (e.target as HTMLElement).style.transform = 'translateY(-1px)';
+                        (e.target as HTMLElement).style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
                       }}
                       onMouseLeave={(e) => {
-                        (e.target as HTMLElement).style.backgroundColor = 'transparent';
+                        (e.target as HTMLElement).style.backgroundColor = '#3b82f6';
+                        (e.target as HTMLElement).style.transform = 'translateY(0)';
+                        (e.target as HTMLElement).style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
                       }}>
-                        Iniciar sesión
+                        Iniciar Sesión
                       </button>
                     </Link>
                     
