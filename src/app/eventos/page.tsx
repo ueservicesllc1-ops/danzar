@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Seat, Event, SeatStatus, SeatCategory } from '@/types/events';
 import SeatMap from '@/components/events/SeatMap';
 import CheckoutSummary from '@/components/events/CheckoutSummary';
+import TicketModal from '@/components/events/TicketModal';
 import { Calendar, MapPin, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -74,7 +75,8 @@ const generateSeats = (): Seat[] => {
 export default function EventosPage() {
   const [seats, setSeats] = useState<Seat[]>(generateSeats());
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [confirmationCode, setConfirmationCode] = useState('');
 
   const handleSeatSelect = (seat: Seat) => {
     const isSelected = selectedSeats.some(s => s.id === seat.id);
@@ -106,9 +108,24 @@ export default function EventosPage() {
   };
 
   const handleCheckout = () => {
-    setShowCheckout(true);
-    // Aquí iría la lógica de pago
-    alert(`¡Compra exitosa! Has reservado ${selectedSeats.length} asiento(s)`);
+    // Generar código de confirmación único
+    const code = `TKT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    setConfirmationCode(code);
+    
+    // Marcar asientos como ocupados
+    setSeats(seats.map(s => 
+      selectedSeats.some(selected => selected.id === s.id) 
+        ? { ...s, status: 'occupied' as SeatStatus } 
+        : s
+    ));
+    
+    // Mostrar modal del ticket
+    setShowTicketModal(true);
+  };
+
+  const handleCloseTicketModal = () => {
+    setShowTicketModal(false);
+    setSelectedSeats([]);
   };
 
   return (
@@ -208,6 +225,15 @@ export default function EventosPage() {
           </div>
         </div>
       </div>
+
+      {/* Ticket Modal */}
+      <TicketModal
+        isOpen={showTicketModal}
+        onClose={handleCloseTicketModal}
+        event={mockEvent}
+        seats={selectedSeats}
+        confirmationCode={confirmationCode}
+      />
     </div>
   );
 }
