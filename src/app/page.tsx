@@ -1,413 +1,257 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, Users, Award, Heart, Music, Zap, Play } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 
-const HomePage = () => {
-  // Datos del carrusel de banners
-  const banners = [
-    {
-      id: 1,
-      title: "Descubre tu Pasión",
-      subtitle: "Donde cada movimiento cuenta una historia",
-      description: "Únete a nuestra familia de bailarines y descubre el arte que llevas dentro",
-      image: "/images/logo.png",
-      bgGradient: "from-purple-600 via-pink-600 to-red-500",
-      textColor: "text-white"
-    },
-    {
-      id: 2,
-      title: "Clases para Todos",
-      subtitle: "Desde principiantes hasta profesionales",
-      description: "Nuestros instructores expertos te guiarán en tu viaje de danza",
-      image: "/images/logo.png",
-      bgGradient: "from-blue-600 via-cyan-500 to-teal-400",
-      textColor: "text-white"
-    },
-    {
-      id: 3,
-      title: "Comunidad Unida",
-      subtitle: "Más que una academia, somos familia",
-      description: "Conecta con otros bailarines y crea amistades que durarán toda la vida",
-      image: "/images/logo.png",
-      bgGradient: "from-orange-500 via-red-500 to-pink-500",
-      textColor: "text-white"
-    }
-  ];
+// Imágenes del carrusel
+const heroImages = [
+  {
+    id: 1,
+    src: 'https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    title: 'Ballet Clásico',
+    subtitle: 'Elegancia y precisión',
+    description: 'Descubre la belleza del ballet clásico con nuestros maestros profesionales'
+  },
+  {
+    id: 2,
+    src: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    title: 'Salsa',
+    subtitle: 'Pasión caribeña',
+    description: 'Aprende los ritmos más calientes de Latinoamérica'
+  },
+  {
+    id: 3,
+    src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    title: 'Hip Hop',
+    subtitle: 'Cultura urbana',
+    description: 'Expresa tu creatividad con los movimientos más modernos'
+  },
+  {
+    id: 4,
+    src: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    title: 'Flamenco',
+    subtitle: 'Arte español',
+    description: 'Sumérgete en la pasión del flamenco auténtico'
+  }
+];
 
-  // Estadísticas animadas
-  const stats = [
-    { number: "500+", label: "Estudiantes Felices", icon: Users },
-    { number: "15+", label: "Años de Experiencia", icon: Award },
-    { number: "50+", label: "Clases por Semana", icon: Music },
-    { number: "100%", label: "Pasión Garantizada", icon: Heart }
-  ];
+export default function HomePage() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
 
-  // Características principales
-  const features = [
-    {
-      icon: Star,
-      title: "Instructores Certificados",
-      description: "Profesionales con años de experiencia y certificaciones internacionales",
-      color: "text-yellow-500"
-    },
-    {
-      icon: Users,
-      title: "Grupos Pequeños",
-      description: "Atención personalizada con máximo 12 estudiantes por clase",
-      color: "text-blue-500"
-    },
-    {
-      icon: Music,
-      title: "Múltiples Estilos",
-      description: "Salsa, Bachata, Merengue, Reggaeton, Hip-Hop y más",
-      color: "text-purple-500"
-    },
-    {
-      icon: Award,
-      title: "Certificaciones",
-      description: "Recibe certificados oficiales al completar cada nivel",
-      color: "text-green-500"
-    }
-  ];
+  // Auto-play del carrusel
+  useEffect(() => {
+    if (!isPlaying) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
 
-  // Testimonios
-  const testimonials = [
-    {
-      name: "María González",
-      role: "Estudiante Avanzada",
-      content: "DanZar cambió mi vida. No solo aprendí a bailar, sino que encontré una familia increíble.",
-      rating: 5
-    },
-    {
-      name: "Carlos Rodríguez",
-      role: "Padre de Familia",
-      content: "Mis hijos han crecido tanto aquí. Los instructores son excepcionales y muy pacientes.",
-      rating: 5
-    },
-    {
-      name: "Ana Martínez",
-      role: "Profesional",
-      content: "Después de 2 años aquí, puedo decir que es la mejor academia de danza de la ciudad.",
-      rating: 5
-    }
-  ];
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section con Carrusel */}
-      <section className="relative min-h-screen overflow-hidden">
-        <Swiper
-          modules={[Autoplay, Pagination, Navigation]}
-          spaceBetween={0}
-          slidesPerView={1}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
-          navigation={true}
-          loop={true}
-          className="h-screen"
-        >
-          {banners.map((banner) => (
-            <SwiperSlide key={banner.id}>
-              <div className={`relative h-screen bg-gradient-to-br ${banner.bgGradient} flex items-center justify-center`}>
-                {/* Overlay para mejor legibilidad */}
-                <div className="absolute inset-0 bg-black/20"></div>
-                
-                {/* Contenido del banner */}
-                <div className="relative z-10 max-w-6xl mx-auto px-8 sm:px-12 lg:px-16 text-center">
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="space-y-8"
-                  >
-                    {/* Logo */}
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
-                      className="flex justify-center mb-8"
-                    >
-                      <Image
-                        src={banner.image}
-                        alt="DanZar Logo"
-                        width={200}
-                        height={200}
-                        className="object-contain drop-shadow-2xl"
-                      />
-                    </motion.div>
-
-                    {/* Título principal */}
-                    <motion.h1
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.6 }}
-                      className={`text-3xl md:text-5xl lg:text-6xl font-bold ${banner.textColor} mb-4 leading-tight`}
-                    >
-                      {banner.title}
-                    </motion.h1>
-
-                    {/* Subtítulo */}
-                    <motion.h2
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.8 }}
-                      className={`text-lg md:text-xl lg:text-2xl font-semibold ${banner.textColor} mb-6`}
-                    >
-                      {banner.subtitle}
-                    </motion.h2>
-
-                    {/* Descripción */}
-                    <motion.p
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 1 }}
-                      className={`text-base md:text-lg ${banner.textColor} mb-8 max-w-3xl mx-auto leading-relaxed`}
-                    >
-                      {banner.description}
-                    </motion.p>
-
-                    {/* Botón CTA */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 1.2 }}
-                      className="flex justify-center"
-                    >
-                      <Link href="/gallery">
-                        <Button 
-                          size="lg" 
-                          className="bg-white text-gray-900 hover:bg-gray-100 text-lg px-8 py-4 font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                        >
-                          <Play className="mr-2 h-5 w-5" />
-                          Explorar Ahora
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                      </Link>
-                    </motion.div>
-                  </motion.div>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
-
-      {/* Estadísticas Animadas */}
-      <section className="py-20 bg-gradient-to-r from-gray-900 to-gray-800">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-              Números que Hablan
-            </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-              La confianza de nuestra comunidad se refleja en estos números
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 hover:bg-white/20 transition-all duration-300">
-                  <stat.icon className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ duration: 0.8, delay: index * 0.1 + 0.3 }}
-                    viewport={{ once: true }}
-                    className="text-3xl md:text-4xl font-bold text-white mb-2"
-                  >
-                    {stat.number}
-                  </motion.div>
-                  <p className="text-gray-300 font-semibold text-sm">{stat.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Características Principales */}
-      <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              ¿Por qué elegir DanZar?
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Somos más que una academia de danza, somos una familia que comparte la pasión por el arte del movimiento.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <div className={`w-14 h-14 ${feature.color} bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4`}>
-                  <feature.icon className={`w-7 h-7 ${feature.color}`} />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed text-sm">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonios */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Lo que dicen nuestros estudiantes
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Historias reales de transformación y crecimiento
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4 italic text-sm">&ldquo;{testimonial.content}&rdquo;</p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold mr-3 text-sm">
-                    {testimonial.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm">{testimonial.name}</h4>
-                    <p className="text-gray-500 text-xs">{testimonial.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
-        {/* Elementos decorativos */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent via-white/10 to-transparent"></div>
-          {[...Array(10)].map((_, i) => (
+    <>
+      <div className="relative h-[80vh] overflow-hidden">
+        {/* Carrusel de imágenes */}
+        <div className="relative w-full h-full">
+          <AnimatePresence mode="wait">
             <motion.div
-              key={i}
-              className="absolute w-3 h-3 bg-white/20 rounded-full"
+              key={currentIndex}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full"
+            >
+              <div 
+                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: `url(${heroImages[currentIndex].src})`,
+                  filter: 'brightness(0.6)'
+                }}
+              />
+              {/* Overlay con gradiente animado */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Logo centrado */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+            <motion.img 
+              src="/images/logo.png" 
+              alt="DanZar Logo" 
+              className="h-48 sm:h-60 lg:h-72 object-contain cursor-pointer hover:scale-110 hover:brightness-110 transition-all duration-300 ease-out"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                duration: 1.5,
+                ease: "easeOut",
+                delay: 0.8
+              }}
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                y: [0, -20, 0],
-                opacity: [0.2, 0.6, 0.2],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
+                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
               }}
             />
-          ))}
-        </div>
+          </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+          {/* Botones */}
+          <div className="absolute bottom-68 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="flex gap-4">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold w-48"
+              >
+                Ver Clases
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 text-lg font-semibold w-48"
+              >
+                <PlayIcon className="w-5 h-5 mr-2" />
+                Ver Galería
+              </Button>
+            </div>
+          </div>
+
+          {/* Controles del carrusel */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+            <div className="flex items-center space-x-4">
+              {/* Botón anterior */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={prevSlide}
+                onMouseEnter={() => setIsPlaying(false)}
+                className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
+              >
+                <ChevronLeftIcon className="w-6 h-6" />
+              </motion.button>
+              
+              {/* Indicadores */}
+              <div className="flex space-x-2">
+                {heroImages.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.2 }}
+                    onClick={() => goToSlide(index)}
+                    onMouseEnter={() => setIsPlaying(false)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? 'bg-primary scale-125' 
+                        : 'bg-white/50 hover:bg-white/70'
+                    }`}
+                  />
+                ))}
+              </div>
+              
+              {/* Botón siguiente */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={nextSlide}
+                onMouseEnter={() => setIsPlaying(false)}
+                className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
+              >
+                <ChevronRightIcon className="w-6 h-6" />
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Botón play/pause */}
+          <div className="absolute top-8 right-8 z-20">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
+            >
+              {isPlaying ? (
+                <PauseIcon className="w-6 h-6" />
+              ) : (
+                <PlayIcon className="w-6 h-6" />
+              )}
+            </motion.button>
+          </div>
+
+          {/* Información de la imagen actual */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            key={`info-${currentIndex}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="absolute bottom-8 right-8 z-20"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              ¿Listo para comenzar tu viaje?
-            </h2>
-            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Únete a nuestra comunidad y descubre el bailarín que llevas dentro. 
-              Tu historia de danza comienza aquí.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link href="/gallery">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <Zap className="mr-2 h-5 w-5" />
-                  Explorar Galería
-                </Button>
-              </Link>
-              <Link href="/auth/login">
-                <Button 
-                  size="lg" 
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4 font-bold rounded-full transition-all duration-300 transform hover:scale-105"
-                >
-                  <Users className="mr-2 h-5 w-5" />
-                  Únete Ahora
-                </Button>
-              </Link>
+            <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 text-white max-w-xs border border-white/20">
+              <h3 className="font-semibold text-lg mb-1">
+                {heroImages[currentIndex].title}
+              </h3>
+              <p className="text-sm text-gray-200">
+                {heroImages[currentIndex].description}
+              </p>
             </div>
           </motion.div>
         </div>
-      </section>
-    </div>
-  );
-};
 
-export default HomePage;
+        {/* Elementos decorativos flotantes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            animate={{ 
+              y: [0, -30, 0],
+              rotate: [0, 10, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full blur-sm"
+          />
+          <motion.div
+            animate={{ 
+              y: [0, 20, 0],
+              rotate: [0, -5, 0],
+              scale: [1, 0.9, 1]
+            }}
+            transition={{ 
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-40 right-20 w-16 h-16 bg-accent/20 rounded-full blur-sm"
+          />
+          <motion.div
+            animate={{ 
+              y: [0, -15, 0],
+              rotate: [0, 8, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{ 
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute bottom-40 left-20 w-24 h-24 bg-primary/10 rounded-full blur-sm"
+          />
+        </div>
+      </div>
+
+    </>
+  );
+}

@@ -25,37 +25,17 @@ export default function Navbar() {
       top: 0, 
       left: 0, 
       right: 0, 
-      height: '100px', 
+      height: '50px', 
       backgroundColor: 'white', 
       borderBottom: '1px solid #e5e7eb',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       paddingLeft: '40px',
       paddingRight: '40px',
       gap: '12px',
       zIndex: 50
     }}>
-      {/* Logo */}
-      <Link href={user ? "/dashboard" : "/"}>
-        <img 
-          src="/images/logo.png" 
-          alt="DanZar Logo" 
-          style={{
-            height: '100px',
-            width: '180px',
-            objectFit: 'contain',
-            cursor: 'pointer',
-            transition: 'transform 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            (e.target as HTMLElement).style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLElement).style.transform = 'scale(1)';
-          }}
-        />
-      </Link>
 
               {/* Usuario logueado o botones de auth */}
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
