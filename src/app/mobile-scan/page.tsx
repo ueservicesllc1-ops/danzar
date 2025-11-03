@@ -274,10 +274,30 @@ export default function MobileScanPage() {
         }
       });
       
+      // Actualizar el estado del resultado
+      const updatedResult = {
+        ...result,
+        ticket: {
+          ...result.ticket,
+          redeemedCount: newRedeemedCount,
+          used: isFullyRedeemed,
+          totalSeats: totalSeats
+        }
+      };
+      setResult(updatedResult);
+      
       if (isFullyRedeemed) {
         alert(`¡Ticket completamente redimido! Se redimieron ${quantity} entrada(s).`);
+        // Cerrar modal y resetear para volver a mostrar botones
+        setShowModal(false);
+        setTimeout(() => {
+          setResult(null);
+          setShowCodeInput(false);
+          setError('');
+        }, 500);
       } else {
         alert(`Se redimieron ${quantity} entrada(s). Quedan ${totalSeats - newRedeemedCount} por redimir.`);
+        // Mantener el modal abierto para ver el estado actualizado
       }
     } catch (err) {
       console.error('Error redimiendo entradas:', err);
@@ -625,7 +645,12 @@ export default function MobileScanPage() {
                   Escanear Otro
                 </button>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setResult(null);
+                    setShowCodeInput(false);
+                    setError('');
+                  }}
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold"
                 >
                   Cerrar
