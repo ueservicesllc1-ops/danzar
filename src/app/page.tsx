@@ -5,35 +5,42 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Play, Pause, X } from 'lucide-react';
 import Link from 'next/link';
 
-// Imágenes del carrusel
+// Imágenes del carrusel - Academia de Danza para Niñas (chicas practicando ballet)
 const heroImages = [
   {
     id: 1,
-    src: 'https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+    src: '/images/bannerhero.jpg',
     title: 'Ballet Clásico',
-    subtitle: 'Elegancia y precisión',
-    description: 'Descubre la belleza del ballet clásico con nuestros maestros profesionales'
+    subtitle: 'Formación profesional',
+    description: 'Desarrolla elegancia, disciplina y técnica con nuestras clases de ballet para niñas'
   },
   {
     id: 2,
-    src: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-    title: 'Salsa',
-    subtitle: 'Pasión caribeña',
-    description: 'Aprende los ritmos más calientes de Latinoamérica'
+    src: '/images/bannerhero.jpg',
+    title: 'Academia de Danza',
+    subtitle: 'Para niñas y jóvenes',
+    description: 'Un espacio dedicado al crecimiento artístico y personal de nuestras bailarinas'
   },
   {
     id: 3,
-    src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-    title: 'Hip Hop',
-    subtitle: 'Cultura urbana',
-    description: 'Expresa tu creatividad con los movimientos más modernos'
+    src: '/images/bannerhero.jpg',
+    title: 'Ballet Infantil',
+    subtitle: 'Desde temprana edad',
+    description: 'Inicia a tu hija en el mundo del ballet con métodos pedagógicos apropiados'
   },
   {
     id: 4,
-    src: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-    title: 'Flamenco',
-    subtitle: 'Arte español',
-    description: 'Sumérgete en la pasión del flamenco auténtico'
+    src: '/images/bannerhero.jpg',
+    title: 'Preparación Artística',
+    subtitle: 'Excelencia en danza',
+    description: 'Programas de formación integral para niñas que aspiran a la excelencia en ballet'
+  },
+  {
+    id: 5,
+    src: '/images/bannerhero.jpg',
+    title: 'Técnica Clásica',
+    subtitle: 'Fundamentos sólidos',
+    description: 'Maestros certificados guían a nuestras estudiantes en cada paso de su desarrollo'
   }
 ];
 
@@ -134,7 +141,7 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      <div className="relative h-[80vh] overflow-hidden">
+      <div className="relative h-[50vh] overflow-hidden">
         {/* Carrusel de imágenes */}
         <div className="relative w-full h-full">
           <AnimatePresence mode="wait" initial={false}>
@@ -146,28 +153,13 @@ export default function HomePage() {
               className="absolute inset-0 w-full h-full"
             >
               <div 
-                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                className="w-full h-full bg-contain bg-center bg-no-repeat"
                 style={{
-                  backgroundImage: `url(${heroImages[currentIndex].src})`,
-                  filter: 'brightness(0.6)'
+                  backgroundImage: `url(${heroImages[currentIndex].src})`
                 }}
               />
-              {/* Overlay con gradiente animado */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
             </motion.div>
           </AnimatePresence>
-
-          {/* Logo centrado */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-            <img 
-              src="/images/logo.png" 
-              alt="DanZar Logo" 
-              className="h-48 sm:h-60 lg:h-72 object-contain cursor-pointer hover:scale-110 hover:brightness-110 transition-all duration-300 ease-out"
-              style={{
-                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
-              }}
-            />
-          </div>
 
           {/* Controles del carrusel */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
