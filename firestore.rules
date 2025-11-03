@@ -25,7 +25,10 @@ service cloud.firestore {
       // Permitir creación pública (cualquiera puede comprar entradas sin autenticación)
       allow create: if true;
       
-      // Permitir actualización solo a administradores (para verificar pagos)
+      // Permitir actualizar solo los campos 'used' y 'usedAt' sin autenticación (para escaneo en puerta)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt']);
+      
+      // Permitir actualización completa solo a administradores (para verificar pagos y otros cambios)
       allow update: if request.auth != null && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'developer'];

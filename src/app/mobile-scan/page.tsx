@@ -221,7 +221,13 @@ export default function MobileScanPage() {
       alert('Entrada redimida exitosamente');
     } catch (err) {
       console.error('Error validando entrada:', err);
-      alert('Error al validar la entrada');
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Detalles del error:', {
+        message: errorMessage,
+        code: (err as { code?: string })?.code,
+        error: err
+      });
+      alert(`Error al validar la entrada: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

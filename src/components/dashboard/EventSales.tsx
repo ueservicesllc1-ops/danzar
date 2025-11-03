@@ -56,7 +56,7 @@ export default function EventSales() {
   };
 
   const stats = {
-    totalSold: sales.length,
+    totalSold: sales.reduce((sum, sale) => sum + (sale.seats?.length || 0), 0),
     totalRevenue: sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0),
     paypalRevenue: sales.filter(s => s.paymentMethod === 'PayPal').reduce((sum, s) => sum + (s.totalAmount || 0), 0),
     mobileRevenue: sales.filter(s => s.paymentMethod === 'Pago Móvil').reduce((sum, s) => sum + (s.totalAmount || 0), 0),
