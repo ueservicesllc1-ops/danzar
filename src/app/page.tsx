@@ -103,29 +103,37 @@ export default function HomePage() {
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
             />
             {/* Popup Content */}
-            <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none z-[10000]">
+            <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 pointer-events-none z-[10000]">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="pointer-events-auto relative max-w-2xl w-full"
+                className="pointer-events-auto relative w-full h-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col"
               >
+                {/* Botón cerrar */}
+                <button
+                  onClick={() => setShowHeroPopup(false)}
+                  className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 w-10 h-10 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center text-white transition-all shadow-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                
                 {/* Imagen Flyer */}
-                <div className="relative">
+                <div className="relative flex-1 flex flex-col overflow-hidden rounded-lg shadow-2xl bg-white">
                   <img
                     src="/images/flyer.jpg"
                     alt="Flyer DanZar"
-                    className="w-full h-auto rounded-lg shadow-2xl"
+                    className="w-full h-full object-contain sm:object-cover"
                   />
                   
-                  {/* Botón "Compra tu Entrada Aquí" */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-                    <Link href="/eventos" onClick={handleAcquireTicket}>
+                  {/* Botón "Compra tu Entrada Aquí" - Siempre visible */}
+                  <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full px-4 sm:px-0">
+                    <Link href="/eventos" onClick={handleAcquireTicket} className="block">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-xl transition-all duration-300"
+                        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-xl transition-all duration-300"
                         style={{
                           boxShadow: '0 10px 25px rgba(147, 51, 234, 0.5)'
                         }}

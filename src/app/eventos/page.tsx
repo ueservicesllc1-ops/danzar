@@ -536,18 +536,18 @@ export default function EventosPage() {
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
+          <div className="flex items-center justify-between">
             <Link href="/">
-              <Button variant="outline" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Volver
+              <Button variant="outline" className="gap-1 sm:gap-2 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4">
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Volver</span>
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-base sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent text-center flex-1 px-2">
               Selección de Asientos
             </h1>
-            <div className="w-24" /> {/* Spacer */}
+            <div className="w-16 sm:w-24" /> {/* Spacer */}
           </div>
         </div>
       </div>
@@ -557,7 +557,7 @@ export default function EventosPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative w-full h-[500px] overflow-hidden"
+        className="relative w-full h-[200px] sm:h-[300px] lg:h-[500px] overflow-hidden"
       >
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -566,19 +566,10 @@ export default function EventosPage() {
       </motion.div>
 
       {/* Main Content */}
-      <div className="w-full py-12">
-        <div className="flex flex-col lg:flex-row gap-8 px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
-          {/* Seat Map */}
-          <div className="flex-1">
-            <SeatMap
-              seats={seats}
-              onSeatSelect={handleSeatSelect}
-              selectedSeats={selectedSeats}
-            />
-          </div>
-
-          {/* Checkout Summary */}
-          <div className="lg:w-80 flex flex-col gap-3">
+      <div className="w-full py-4 sm:py-6 lg:py-12">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-8" style={{ maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+          {/* Checkout Summary - Primero en móvil */}
+          <div className="lg:w-80 flex flex-col gap-3 order-2 lg:order-1">
             <CheckoutSummary
               event={mockEvent}
               selectedSeats={selectedSeats}
@@ -592,30 +583,39 @@ export default function EventosPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white rounded-2xl shadow-lg border border-gray-200"
-              style={{ padding: '2rem' }}
+              className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200"
+              style={{ padding: '1rem sm:1.5rem lg:2rem' }}
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-4">{mockEvent.title}</h3>
-              <p className="text-lg text-gray-700 mb-4">{mockEvent.artist}</p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="w-5 h-5" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-4">{mockEvent.title}</h3>
+              <p className="text-sm sm:text-lg text-gray-700 mb-3 sm:mb-4">{mockEvent.artist}</p>
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span>{mockEvent.date}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="w-5 h-5" />
+                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span>{mockEvent.time}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-5 h-5" />
-                  <span>{mockEvent.venue}</span>
+                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="break-words">{mockEvent.venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Users className="w-5 h-5" />
+                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span>{seats.filter(s => s.status === 'available').length} asientos disponibles</span>
                 </div>
               </div>
             </motion.div>
+          </div>
+
+          {/* Seat Map */}
+          <div className="flex-1 order-1 lg:order-2">
+            <SeatMap
+              seats={seats}
+              onSeatSelect={handleSeatSelect}
+              selectedSeats={selectedSeats}
+            />
           </div>
         </div>
       </div>
@@ -641,19 +641,19 @@ export default function EventosPage() {
               }}
             />
 
-            <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 1000 }}>
+            <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 pointer-events-none" style={{ zIndex: 1000 }}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white rounded-2xl shadow-2xl pointer-events-auto"
-                style={{ width: '500px', border: '1px solid #9B0000', zIndex: 1001 }}
+                className="bg-white rounded-xl sm:rounded-2xl shadow-2xl pointer-events-auto w-full max-w-md sm:max-w-lg"
+                style={{ border: '1px solid #9B0000', zIndex: 1001, maxHeight: '90vh', overflowY: 'auto' }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div style={{ width: 'calc(100% - 10px)', margin: '5px', border: '1px solid #efb810', padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>Datos del Comprador</h2>
+                <div style={{ width: 'calc(100% - 10px)', margin: '5px', border: '1px solid #efb810', padding: '1rem sm:1.25rem lg:1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem sm:1.25rem' }}>
+                    <h2 style={{ fontSize: '1.125rem sm:1.5rem lg:1.5rem', fontWeight: 'bold', margin: 0 }}>Datos del Comprador</h2>
                     <button
                       onClick={() => setShowCustomerDataModal(false)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer' }}
