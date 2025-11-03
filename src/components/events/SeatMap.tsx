@@ -122,7 +122,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
 
       {/* Mapa de asientos */}
       <div className="mb-12 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8">
           {/* Nave Izquierda */}
           <div className="space-y-1 flex flex-col items-center">
             {rows.map((row, rowIndex) => {
@@ -218,8 +218,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
           </div>
 
           {/* Pasillo Central */}
-          <div className="w-20 flex flex-col items-center justify-center">
-            <div className="text-xs text-gray-400 font-semibold mb-2">PASILLO</div>
+          <div className="w-4 sm:w-12 lg:w-20 flex flex-col items-center justify-center">
+            <div className="text-[10px] sm:text-xs text-gray-400 font-semibold mb-1 sm:mb-2 hidden sm:block">PASILLO</div>
             <div className="w-px h-full bg-gray-300"></div>
           </div>
 
