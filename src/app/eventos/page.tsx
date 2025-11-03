@@ -25,7 +25,7 @@ const mockEvent: Event = {
   id: '1',
   title: 'The Greatest Showdance',
   artist: 'DanZar Dance Company',
-  date: '6 de Diciembre, 2024',
+  date: '6 de Diciembre, 2025',
   time: '5:00 PM',
   venue: 'Teatro Municipal de Cabimas',
   image: '/images/banner.jpg',
