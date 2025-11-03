@@ -395,6 +395,7 @@ export default function EventosPage() {
           : process.env.NEXT_PUBLIC_APP_URL || '';
       
       const ticketUrl = `${baseUrl}/ticket/${code}`;
+      const logoUrl = `${baseUrl}/images/logo.png`;
       
       // Enviar email de confirmación usando EmailJS desde el cliente
       try {
@@ -419,6 +420,7 @@ export default function EventosPage() {
             total_amount: `$${ticketData.totalAmount.toFixed(2)}`,
             confirmation_code: code,
             ticket_url: ticketUrl,
+            logo_url: logoUrl,
             app_name: process.env.NEXT_PUBLIC_APP_NAME || 'DanZar'
           }
         );
@@ -477,6 +479,7 @@ export default function EventosPage() {
           : process.env.NEXT_PUBLIC_APP_URL || '';
       
       const testTicketUrl = `${testBaseUrl}/ticket/${testCode}`;
+      const testLogoUrl = `${testBaseUrl}/images/logo.png`;
 
       // Formatear asientos para el email
       const testSeats = selectedSeats.length > 0 
@@ -512,6 +515,7 @@ export default function EventosPage() {
           total_amount: `$${testTotal.toFixed(2)}`,
           confirmation_code: testCode,
           ticket_url: testTicketUrl,
+          logo_url: testLogoUrl,
           app_name: process.env.NEXT_PUBLIC_APP_NAME || 'DanZar'
         }
       );
