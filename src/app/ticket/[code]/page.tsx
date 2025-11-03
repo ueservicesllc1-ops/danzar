@@ -306,14 +306,15 @@ export default function TicketPage() {
       )}
 
       {/* Main Content - Ticket Metálico 3D */}
-      <div className="w-full min-h-screen sm:flex sm:items-center sm:justify-center sm:bg-gray-100 sm:p-4">
+      <div className="w-full min-h-screen flex items-center justify-center bg-gray-100 p-0 sm:p-4">
         <div 
-          className="metallic-card-3d pointer-events-auto mx-auto"
+          className="metallic-card-3d pointer-events-auto"
           style={{
-            width: '390px',
-            maxWidth: '100vw',
-            height: '750px',
-            maxHeight: '85vh'
+            width: '100%',
+            maxWidth: '390px',
+            height: '100vh',
+            maxHeight: '100vh',
+            margin: '0 auto'
           }}
           onMouseMove={handleCardMove}
           onMouseLeave={resetCardPosition}

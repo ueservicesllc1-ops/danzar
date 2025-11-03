@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { QrCode, Hash, ArrowLeft } from 'lucide-react';
 import { BrowserQRCodeReader } from '@zxing/library';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface TicketResult {
@@ -245,12 +245,24 @@ export default function MobileScanPage() {
       const newRedeemedCount = currentRedeemed + quantity;
       const isFullyRedeemed = newRedeemedCount >= totalSeats;
       
-      await updateDoc(doc(db, 'tickets', result.docId), {
+      // Construir objeto de actualización sin valores undefined
+      const updateData: {
+        redeemedCount: number;
+        used: boolean;
+        usedAt?: Timestamp;
+        lastRedeemedAt: Timestamp;
+      } = {
         redeemedCount: newRedeemedCount,
         used: isFullyRedeemed,
-        usedAt: isFullyRedeemed ? new Date() : undefined,
-        lastRedeemedAt: new Date()
-      });
+        lastRedeemedAt: Timestamp.now()
+      };
+      
+      // Solo agregar usedAt si está completamente redimido
+      if (isFullyRedeemed) {
+        updateData.usedAt = Timestamp.now();
+      }
+      
+      await updateDoc(doc(db, 'tickets', result.docId), updateData);
       
       setResult({
         ...result,
