@@ -289,7 +289,8 @@ export default function EventosPage() {
           title: mockEvent.title,
           date: mockEvent.date,
           time: mockEvent.time,
-          venue: mockEvent.venue
+          venue: mockEvent.venue,
+          image: mockEvent.image
         },
         seats: selectedSeats.map(s => ({ id: s.id, row: s.row, number: s.number })),
         totalAmount: selectedSeats.length === 3 ? 30 : selectedSeats.length === 5 ? 45 : selectedSeats.reduce((sum, s) => sum + s.price, 0),

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Ticket, Loader2, AlertCircle, Wifi, WifiOff, X } from 'lucide-react';
+import { Ticket, Loader2, AlertCircle, Wifi, WifiOff, X, Calendar, MapPin, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -25,6 +25,7 @@ interface TicketData {
     date: string;
     time: string;
     venue: string;
+    image?: string;
   };
   seats: Array<{
     id: string;
@@ -83,9 +84,15 @@ export default function TicketPage() {
           const tickets = JSON.parse(saved);
           const savedTicket = tickets[codeUpper];
           if (savedTicket) {
-            setTicket(savedTicket);
+            // Convertir createdAt de string a Date si es necesario
+            const ticketData = {
+              ...savedTicket,
+              createdAt: savedTicket.createdAt ? new Date(savedTicket.createdAt) : new Date()
+            };
+            setTicket(ticketData as TicketData);
             setLoadedFromCache(true);
             setLoading(false);
+            console.log('Ticket cargado desde localStorage (modo offline)');
             return;
           }
         }
@@ -120,8 +127,19 @@ export default function TicketPage() {
           try {
             const saved = localStorage.getItem(STORAGE_KEY);
             const tickets = saved ? JSON.parse(saved) : {};
-            tickets[ticketData.confirmationCode] = ticketData;
+            
+            // Convertir datos de Firestore a formato serializable para localStorage
+            const serializableTicket = {
+              ...ticketData,
+              createdAt: ticketData.createdAt instanceof Date 
+                ? ticketData.createdAt.toISOString() 
+                : ticketData.createdAt
+            };
+            
+            tickets[ticketData.confirmationCode] = serializableTicket;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
+            
+            console.log('Ticket guardado en localStorage para acceso offline');
             
             // Notificar al Service Worker para cachear esta página
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -131,7 +149,7 @@ export default function TicketPage() {
               });
             }
           } catch (err) {
-            console.error('Error guardando ticket:', err);
+            console.error('Error guardando ticket en localStorage:', err);
           }
         }
       } catch (err) {
@@ -180,9 +198,10 @@ export default function TicketPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Header - Oculto en móvil para más espacio */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm hidden sm:block">
+    <div className="min-h-screen w-full">
+      {/* Header - Eliminado para pantalla completa móvil */}
+      {false && (
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link href="/">
@@ -215,146 +234,110 @@ export default function TicketPage() {
           </div>
         </div>
       </div>
+      )}
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 lg:px-8 py-1 sm:py-12">
-        {/* Ticket Display */}
+      {/* Main Content - Diseño Móvil Vertical Pantalla Completa */}
+      <div className="w-full min-h-screen bg-white sm:flex sm:items-center sm:justify-center sm:bg-gray-100 sm:p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-2xl overflow-hidden shadow-xl border-2 sm:border-4 border-white relative"
+          className="bg-white rounded-none shadow-2xl relative flex flex-col w-full sm:w-[390px] sm:max-w-[100vw] min-h-screen sm:min-h-[844px] sm:max-h-[90vh]"
         >
-          {/* Botón X de cierre - Siempre visible en esquina superior derecha */}
+          {/* Botón X de cierre */}
           <Link href="/">
-            <button className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 w-10 h-10 bg-white hover:bg-gray-50 rounded-full flex items-center justify-center shadow-xl border-2 border-gray-300 transition-all active:scale-95">
-              <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-800" />
+            <button className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all">
+              <X className="w-5 h-5" />
             </button>
           </Link>
-          {/* Ticket Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 sm:p-6 lg:p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -mr-12 -mt-12 sm:-mr-16 sm:-mt-16" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-24 sm:h-24 bg-white/10 rounded-full -ml-8 -mb-8 sm:-ml-12 sm:-mb-12" />
+
+          {/* Contenido del ticket */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Header - Franja negra */}
+            <div className="w-full bg-black flex-shrink-0" style={{ height: '40px' }} />
             
-            <div className="relative z-10 pr-12 sm:pr-0">
-              <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                <Ticket className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Ticket Digital</span>
-              </div>
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 sm:mb-2 leading-tight">{ticket.event.title}</h3>
-              <p className="text-sm sm:text-base lg:text-lg text-white/90">{ticket.event.venue}</p>
+            {/* Banner del evento */}
+            <div 
+              className="w-full h-[150px] bg-cover bg-center flex-shrink-0"
+              style={{ 
+                backgroundImage: `url(${ticket.event.image || '/images/banner.jpg'})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            />
+            
+            {/* Palabra Ticket */}
+            <div className="px-4 pt-6 pb-4" style={{ marginTop: '20px' }}>
+              <h2 className="text-4xl font-bold text-gray-900 text-center">TICKET</h2>
             </div>
-          </div>
-
-          {/* Perforated edge effect */}
-          <div className="relative h-4 sm:h-6 bg-gradient-to-br from-purple-50 to-pink-50">
-            <div className="absolute top-0 left-0 right-0 flex justify-between">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full -mt-1.5 sm:-mt-2"
-                />
-              ))}
+            
+            {/* Nombre del concierto */}
+            <div className="px-4 pt-8 pb-4 relative" style={{ zIndex: 10 }}>
+              <h3 className="text-3xl font-semibold text-gray-900 text-center">{ticket.event.title}</h3>
             </div>
-          </div>
-
-          {/* Ticket Body */}
-          <div className="p-2.5 sm:p-6 lg:p-10">
-            <div className="flex flex-col gap-3 sm:gap-6 md:grid md:grid-cols-2 md:gap-10">
-              {/* QR Code - Primero en móvil */}
-              <div className="flex flex-col items-center justify-center order-first md:order-last">
-                <div className="bg-white p-2.5 sm:p-5 rounded-lg sm:rounded-2xl shadow-lg border-2 border-gray-100 w-full max-w-[160px] sm:max-w-[220px] md:max-w-none mx-auto">
-                  <MobileQRCode
-                    value={ticket.qrCode || `TICKET-${ticket.confirmationCode}-${ticket.event.id}`}
-                    size={140}
-                    level="H"
-                    includeMargin={true}
-                    imageSettings={{
-                      src: "/images/logo.png",
-                      height: 26,
-                      width: 26,
-                      excavate: true,
-                    }}
-                    className="w-full h-auto"
-                  />
-                </div>
-                <div className="mt-1.5 sm:mt-3 text-center w-full">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Código</p>
-                  <p className="text-xs font-mono font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded break-all">
-                    {ticket.confirmationCode}
-                  </p>
-                </div>
-                <p className="text-xs text-gray-500 text-center mt-1.5 max-w-xs mx-auto">
-                  Presenta QR en la entrada
-                </p>
+            
+            {/* Código QR grande */}
+            <div className="px-2 pt-8 pb-4 flex justify-center" style={{ marginTop: '-20px' }}>
+              <MobileQRCode
+                value={ticket.qrCode || `TICKET-${ticket.confirmationCode}-${ticket.event.id}`}
+                size={380}
+                level="H"
+                includeMargin={true}
+                imageSettings={{
+                  src: "/images/logo.png",
+                  height: 75,
+                  width: 75,
+                  excavate: true,
+                }}
+              />
+            </div>
+            
+            {/* Detalles del evento */}
+            <div className="px-4 pt-6 pb-4 space-y-4" style={{ marginTop: '-20px' }}>
+              <div className="flex items-center justify-center gap-2 text-gray-700">
+                <Calendar className="w-5 h-5" />
+                <span className="text-base">{ticket.event.date} - {ticket.event.time}</span>
               </div>
-
-              {/* Event Details - Segundo en móvil */}
-              <div className="space-y-2.5 sm:space-y-4 order-last md:order-first">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase mb-0.5">Fecha y Hora</p>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-900">{ticket.event.date}</p>
-                  <p className="text-xs text-gray-700">{ticket.event.time}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 uppercase mb-0.5">Comprador</p>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {ticket.customer.firstName} {ticket.customer.lastName}
-                  </p>
-                  <p className="text-xs text-gray-600 break-all">{ticket.customer.email}</p>
-                  <p className="text-xs text-gray-600">{ticket.customer.phone}</p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 uppercase mb-0.5">Asientos</p>
-                  <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2 text-gray-700">
+                <MapPin className="w-5 h-5" />
+                <span className="text-base">{ticket.event.venue}</span>
+              </div>
+            </div>
+            
+            {/* Asientos comprados y Estado del ticket */}
+            <div className="px-4 pt-12 pb-4 space-y-4" style={{ marginTop: '30px' }}>
+              {/* Asientos comprados */}
+              {ticket.seats && ticket.seats.length > 0 && (
+                <div className="text-center mb-4" style={{ marginTop: '-20px' }}>
+                  <p className="text-sm text-gray-600 mb-3">Asientos:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
                     {ticket.seats.map((seat, index) => (
-                      <div key={index} className="flex items-center justify-between bg-white rounded p-1.5">
-                        <span className="text-xs font-semibold text-gray-900">
-                          Fila {seat.row} - Asiento {seat.number}
-                        </span>
+                      <div
+                        key={`${seat.row}${seat.number}-${index}`}
+                        className="bg-purple-600 text-white font-bold text-lg px-4 py-2 min-w-[60px] text-center"
+                        style={{ borderRadius: '0' }}
+                      >
+                        {seat.row}{seat.number}
                       </div>
                     ))}
                   </div>
                 </div>
-
-                <div className="pt-1.5 border-t border-gray-300">
-                  <div className="flex justify-between text-xs sm:text-sm font-bold text-gray-900">
-                    <span>Total</span>
-                    <span>${ticket.totalAmount.toFixed(2)}</span>
-                  </div>
+              )}
+              
+              {/* Estado del ticket */}
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4" style={{ marginTop: '20px' }}>
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <span className="text-lg font-bold text-green-800">
+                    {ticket.status === 'pending' ? 'PENDIENTE' : 
+                     ticket.status === 'used' ? 'REDIMIDO' : 
+                     ticket.status === 'approved' ? 'VERIFICADO' : 'VERIFICADO'}
+                  </span>
                 </div>
               </div>
             </div>
-
-            {/* Status Notice */}
-            <div className={`mt-3 sm:mt-4 p-2 sm:p-3 rounded-lg ${
-              ticket.status === 'pending' 
-                ? 'bg-yellow-50 border border-yellow-200' 
-                : 'bg-green-50 border border-green-200'
-            }`}>
-              <p className={`text-xs ${
-                ticket.status === 'pending' ? 'text-yellow-800' : 'text-green-800'
-              }`}>
-                <strong>
-                  {ticket.status === 'pending' 
-                    ? '⚠️ Pendiente de Verificación' 
-                    : '✅ Ticket Verificado'}
-                </strong>
-                {ticket.status === 'pending' && (
-                  <span className="block mt-1">Será activado después de verificar el pago.</span>
-                )}
-              </p>
-            </div>
-
-            {/* Offline Notice */}
-            {loadedFromCache && (
-              <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded-lg">
-                <p className="text-xs text-purple-800 text-center">
-                  💾 Funciona sin internet
-                </p>
-              </div>
-            )}
+            
+            {/* Franja negra abajo */}
+            <div className="w-full bg-black flex-shrink-0" style={{ height: '40px', marginTop: 'auto' }} />
           </div>
         </motion.div>
       </div>
