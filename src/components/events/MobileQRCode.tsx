@@ -17,7 +17,7 @@ interface MobileQRCodeProps {
 }
 
 export default function MobileQRCode(props: MobileQRCodeProps) {
-  const [QRCodeComponent, setQRCodeComponent] = useState<React.ComponentType<{ value: string; size: number; level?: string; includeMargin?: boolean; imageSettings?: unknown }> | null>(null);
+  const [QRCodeComponent, setQRCodeComponent] = useState<React.ComponentType<{ value: string; size: number; level?: string; includeMargin?: boolean; imageSettings?: unknown; bgColor?: string; }> | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export default function MobileQRCode(props: MobileQRCodeProps) {
         if (!mounted) return;
         // Verificar que el módulo tenga QRCodeSVG
         if (module && module.QRCodeSVG) {
-          setQRCodeComponent(module.QRCodeSVG);
+          setQRCodeComponent(module.QRCodeSVG as React.ComponentType<{ value: string; size: number; level?: string; includeMargin?: boolean; imageSettings?: unknown; bgColor?: string; className?: string; }>);
         } else {
           console.error('QRCodeSVG no encontrado en el módulo qrcode.react');
           setError('No se pudo cargar el generador de QR');
@@ -76,6 +76,17 @@ export default function MobileQRCode(props: MobileQRCodeProps) {
 
   // Renderizar el componente QRCode usando JSX directamente
   const QRCode = QRCodeComponent;
-  return <QRCode {...props} />;
+  return (
+    <div style={{ backgroundColor: 'transparent', display: 'inline-block' }}>
+      <QRCode 
+        value={props.value}
+        size={props.size || 200}
+        level={props.level}
+        includeMargin={props.includeMargin}
+        imageSettings={props.imageSettings}
+        bgColor="transparent"
+      />
+    </div>
+  );
 }
 

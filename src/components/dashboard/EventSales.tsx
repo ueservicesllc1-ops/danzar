@@ -57,10 +57,10 @@ export default function EventSales() {
 
   const stats = {
     totalSold: sales.length,
-    totalRevenue: sales.reduce((sum, sale) => sum + sale.totalAmount, 0),
-    paypalRevenue: sales.filter(s => s.paymentMethod === 'PayPal').reduce((sum, s) => sum + s.totalAmount, 0),
-    mobileRevenue: sales.filter(s => s.paymentMethod === 'Pago Móvil').reduce((sum, s) => sum + s.totalAmount, 0),
-    transferRevenue: sales.filter(s => s.paymentMethod === 'Transferencia').reduce((sum, s) => sum + s.totalAmount, 0)
+    totalRevenue: sales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0),
+    paypalRevenue: sales.filter(s => s.paymentMethod === 'PayPal').reduce((sum, s) => sum + (s.totalAmount || 0), 0),
+    mobileRevenue: sales.filter(s => s.paymentMethod === 'Pago Móvil').reduce((sum, s) => sum + (s.totalAmount || 0), 0),
+    transferRevenue: sales.filter(s => s.paymentMethod === 'Transferencia').reduce((sum, s) => sum + (s.totalAmount || 0), 0)
   };
 
   const handleViewDetails = (sale: Sale) => {
@@ -225,7 +225,7 @@ export default function EventSales() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                       <Users size={18} color="#6b7280" />
-                      <strong style={{ color: '#1f2937', fontSize: '15px' }}>{sale.customer.firstName} {sale.customer.lastName}</strong>
+                      <strong style={{ color: '#1f2937', fontSize: '15px' }}>{sale.customer?.firstName || ''} {sale.customer?.lastName || ''}</strong>
                       <span style={{
                         backgroundColor: sale.status === 'approved' ? '#dcfce7' : '#fef3c7',
                         color: sale.status === 'approved' ? '#166534' : '#92400e',
@@ -238,19 +238,33 @@ export default function EventSales() {
                       </span>
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
-                      {sale.customer.email}
+                      {sale.customer?.email || 'N/A'}
                     </p>
                     <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
                       Asientos: {seatsDisplay} | ${sale.totalAmount} • {sale.paymentMethod}
                     </p>
                     <p style={{ color: '#9ca3af', fontSize: '11px' }}>
-                      {sale.createdAt?.toDate ? sale.createdAt.toDate().toLocaleString() : sale.createdAt?.toString()}
+                      {(() => {
+                        if (!sale.createdAt) return 'N/A';
+                        if (typeof sale.createdAt === 'object' && 'toDate' in sale.createdAt && typeof sale.createdAt.toDate === 'function') {
+                          return sale.createdAt.toDate().toLocaleString();
+                        }
+                        if (sale.createdAt instanceof Date) {
+                          return sale.createdAt.toLocaleString();
+                        }
+                        return String(sale.createdAt);
+                      })()}
                     </p>
                   </div>
 
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    {sale.paymentDetails?.screenshot && (
-                      <button
+                    {(() => {
+                      const hasScreenshot = sale.paymentDetails && 
+                        typeof sale.paymentDetails === 'object' && 
+                        'screenshot' in sale.paymentDetails && 
+                        Boolean(sale.paymentDetails.screenshot);
+                      return hasScreenshot ? (
+                        <button
                         onClick={() => handleViewDetails(sale)}
                         style={{
                           backgroundColor: '#3b82f6',
@@ -269,7 +283,8 @@ export default function EventSales() {
                         <Eye size={16} />
                         Ver Detalles
                       </button>
-                    )}
+                      ) : null;
+                    })()}
                     <div title={sale.qrCode}>
                       <QrCode size={24} color="#6b7280" />
                     </div>
@@ -347,25 +362,44 @@ export default function EventSales() {
                   {selectedSale.paymentDetails?.lastDigits && (
                     <p style={{ marginBottom: '10px' }}><strong>Últimos 4 dígitos:</strong> {selectedSale.paymentDetails.lastDigits}</p>
                   )}
-                  <p style={{ marginBottom: '10px' }}><strong>Código QR:</strong> {selectedSale.qrCode}</p>
-                  <p style={{ marginBottom: '10px' }}><strong>Código de Confirmación:</strong> {selectedSale.confirmationCode}</p>
-                  <p style={{ marginBottom: '10px' }}><strong>Fecha:</strong> {selectedSale.createdAt?.toDate ? selectedSale.createdAt.toDate().toLocaleString() : selectedSale.createdAt?.toString()}</p>
+                  <p style={{ marginBottom: '10px' }}><strong>Código QR:</strong> {String(selectedSale.qrCode || 'N/A')}</p>
+                  <p style={{ marginBottom: '10px' }}><strong>Código de Confirmación:</strong> {String(selectedSale.confirmationCode || 'N/A')}</p>
+                  <p style={{ marginBottom: '10px' }}><strong>Fecha:</strong> {(() => {
+                    if (!selectedSale.createdAt) return 'N/A';
+                    if (typeof selectedSale.createdAt === 'object' && 'toDate' in selectedSale.createdAt && typeof selectedSale.createdAt.toDate === 'function') {
+                      return selectedSale.createdAt.toDate().toLocaleString();
+                    }
+                    if (selectedSale.createdAt instanceof Date) {
+                      return selectedSale.createdAt.toLocaleString();
+                    }
+                    return String(selectedSale.createdAt);
+                  })()}</p>
                 </div>
 
-                {selectedSale.paymentDetails?.screenshot && (
-                  <div style={{ marginBottom: '20px' }}>
-                    <p style={{ marginBottom: '10px', fontWeight: 'bold' }}>Comprobante de Pago:</p>
-                    <img 
-                      src={selectedSale.paymentDetails.screenshot} 
-                      alt="Comprobante" 
-                      style={{
-                        maxWidth: '100%',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px'
-                      }}
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const paymentDetails = selectedSale.paymentDetails;
+                  if (!paymentDetails || typeof paymentDetails !== 'object' || !('screenshot' in paymentDetails)) {
+                    return null;
+                  }
+                  const screenshot = paymentDetails.screenshot;
+                  if (typeof screenshot !== 'string' || !screenshot) {
+                    return null;
+                  }
+                  return (
+                    <div style={{ marginBottom: '20px' }}>
+                      <p style={{ marginBottom: '10px', fontWeight: 'bold' }}>Comprobante de Pago:</p>
+                      <img 
+                        src={screenshot} 
+                        alt="Comprobante" 
+                        style={{
+                          maxWidth: '100%',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
 
                 {selectedSale.status === 'pending' && (
                   <button

@@ -67,7 +67,7 @@ export default function ScanQRPage() {
 
       // Debería haber solo un resultado
       const ticketDoc = querySnapshot.docs[0];
-      const ticketData = ticketDoc.data();
+      const ticketData = ticketDoc.data() as TicketResult['ticket'];
 
       // Mostrar resultado
       setResult({

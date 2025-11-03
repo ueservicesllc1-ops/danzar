@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       let responseData;
       try {
         responseData = JSON.parse(responseText);
-      } catch (parseError) {
+      } catch {
         // Si no es JSON, es un error de texto plano
         console.error('[EMAIL] ✗ EmailJS devolvió texto plano en lugar de JSON');
         console.error('[EMAIL] Respuesta completa:', responseText);
@@ -171,16 +171,17 @@ export async function POST(request: NextRequest) {
       
       console.log('[EMAIL] ✓ EmailJS API completado en', sendDuration, 'ms');
       
-    } catch (emailjsError: any) {
+    } catch (emailjsError: unknown) {
       const sendDuration = Date.now() - startTime;
       console.error('[EMAIL] ✗ ERROR en EmailJS API:');
       console.error('[EMAIL] ═══════════════════════════════════════════════════');
+      const errorObj = emailjsError as { message?: string; text?: string; status?: number; response?: unknown; stack?: string };
       console.error('[EMAIL] Tipo de error:', typeof emailjsError);
       console.error('[EMAIL] Error instanceof Error:', emailjsError instanceof Error);
-      console.error('[EMAIL] Mensaje:', emailjsError?.message || emailjsError?.text || 'Sin mensaje');
-      console.error('[EMAIL] Status:', emailjsError?.status || 'Sin status');
-      console.error('[EMAIL] Response:', emailjsError?.response ? JSON.stringify(emailjsError.response) : 'Sin response');
-      console.error('[EMAIL] Stack:', emailjsError?.stack || 'Sin stack');
+      console.error('[EMAIL] Mensaje:', errorObj?.message || errorObj?.text || 'Sin mensaje');
+      console.error('[EMAIL] Status:', errorObj?.status || 'Sin status');
+      console.error('[EMAIL] Response:', errorObj?.response ? JSON.stringify(errorObj.response) : 'Sin response');
+      console.error('[EMAIL] Stack:', errorObj?.stack || 'Sin stack');
       console.error('[EMAIL] Error completo:');
       console.error('[EMAIL]', JSON.stringify(emailjsError, Object.getOwnPropertyNames(emailjsError), 2));
       console.error('[EMAIL] ═══════════════════════════════════════════════════');
@@ -234,7 +235,15 @@ export async function POST(request: NextRequest) {
     console.error('═══════════════════════════════════════════════════');
     
     // Intentar obtener más información del error
-    let errorDetails: any = {
+    const errorDetails: {
+      message: string;
+      type: string;
+      response?: unknown;
+      status?: number;
+      statusText?: string;
+      code?: string;
+      config?: unknown;
+    } = {
       message: error instanceof Error ? error.message : String(error),
       type: error instanceof Error ? error.name : typeof error
     };
@@ -242,13 +251,19 @@ export async function POST(request: NextRequest) {
     // Si el error tiene propiedades adicionales, incluirlas
     if (error && typeof error === 'object') {
       try {
-        const errorObj = error as any;
+        const errorObj = error as {
+          response?: unknown;
+          status?: number;
+          statusText?: string;
+          code?: string;
+          config?: unknown;
+        };
         if (errorObj.response) errorDetails.response = errorObj.response;
         if (errorObj.status) errorDetails.status = errorObj.status;
         if (errorObj.statusText) errorDetails.statusText = errorObj.statusText;
         if (errorObj.code) errorDetails.code = errorObj.code;
         if (errorObj.config) errorDetails.config = errorObj.config;
-      } catch (e) {
+      } catch {
         // Ignorar errores al intentar serializar
       }
     }

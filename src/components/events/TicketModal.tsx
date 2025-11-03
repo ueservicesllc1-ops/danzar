@@ -35,7 +35,7 @@ export default function TicketModal({
         if (!mounted) return;
         const QRCode = module.QRCodeSVG;
         if (QRCode) {
-          setQRCodeComponent(QRCode);
+          setQRCodeComponent(QRCode as React.ComponentType<{ value: string; size: number; level?: string; includeMargin?: boolean; imageSettings?: unknown; bgColor?: string; }>);
         }
       })
       .catch((error) => {
