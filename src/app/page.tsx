@@ -130,8 +130,8 @@ export default function HomePage() {
                     />
                   </div>
                   
-                  {/* Botón "Compra tu Entrada Aquí" - Sobre la imagen, un poco más abajo */}
-                  <div className="absolute top-12 sm:top-16 left-0 right-0 z-[100] px-4 sm:px-6">
+                  {/* Botón "Compra tu Entrada Aquí" - Sobre la imagen, más abajo */}
+                  <div className="absolute top-24 sm:top-32 left-0 right-0 z-[100] px-4 sm:px-6">
                     <div className="flex justify-center w-full">
                       <Link href="/eventos" onClick={handleAcquireTicket} className="block w-full sm:w-auto">
                         <motion.button
