@@ -28,14 +28,8 @@
         }
         .header h1 {
             color: #9B0000;
-            margin: 0;
+            margin: 15px 0 10px 0;
             font-size: 28px;
-        }
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: #9B0000;
-            margin-bottom: 10px;
         }
         .success-icon {
             background-color: #28a745;
@@ -123,15 +117,26 @@
             text-align: center;
             margin: 20px 0;
         }
+        .logo-container {
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">{{app_name}}</div>
+            <div class="logo-container">
+                <img src="{{logo_url}}" alt="{{app_name}} Logo" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+            </div>
             <div class="success-icon">✓</div>
             <h1>¡Compra Exitosa!</h1>
-            <p>Tu ticket ha sido confirmado</p>
+            <p style="color: #666; font-size: 16px;">Hola {{to_name}}, tu ticket ha sido confirmado</p>
         </div>
 
         <div class="ticket-info">
@@ -181,7 +186,12 @@
             </ul>
         </div>
 
+        <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+            <strong>⚠️ Nota:</strong> Este ticket está pendiente de verificación. Serás notificado dentro de las próximas 24 horas una vez que se verifique el pago.
+        </div>
+
         <div class="footer">
+            <img src="{{logo_url}}" alt="{{app_name}} Logo" style="max-width: 120px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
             <p><strong>{{app_name}}</strong></p>
             <p>Este es un email automático, por favor no respondas.</p>
             <p>Si tienes alguna pregunta, contacta a nuestro equipo de soporte.</p>
@@ -189,4 +199,3 @@
     </div>
 </body>
 </html>
-
