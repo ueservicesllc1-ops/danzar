@@ -52,6 +52,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef(1);
+  const positionRef = useRef({ x: 0, y: 0 });
   const rows = Array.from(new Set(seats.map(seat => seat.row))).sort();
   
   useEffect(() => {
@@ -64,7 +66,13 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Manejo de zoom con dos dedos (pinch to zoom)
+  // Actualizar refs cuando cambian los estados
+  useEffect(() => {
+    scaleRef.current = scale;
+    positionRef.current = position;
+  }, [scale, position]);
+
+  // Manejo de zoom con dos dedos (pinch to zoom) - Versión mejorada
   useEffect(() => {
     if (!isMobile || !containerRef.current) return;
 
@@ -73,6 +81,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
     let initialScale = 1;
     let initialPosition = { x: 0, y: 0 };
     let lastTouch: { x: number; y: number } | null = null;
+    let isPinching = false;
+    let isPanning = false;
 
     const getDistance = (touch1: Touch, touch2: Touch) => {
       const dx = touch1.clientX - touch2.clientX;
@@ -80,55 +90,135 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
       return Math.sqrt(dx * dx + dy * dy);
     };
 
+    const getCenter = (touch1: Touch, touch2: Touch) => {
+      return {
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2
+      };
+    };
+
     const handleTouchStart = (e: TouchEvent) => {
+      const currentScale = scaleRef.current;
+      const currentPosition = positionRef.current;
+      
       if (e.touches.length === 2) {
+        isPinching = true;
+        isPanning = false;
         setIsZooming(true);
         initialDistance = getDistance(e.touches[0], e.touches[1]);
-        initialScale = scale;
+        initialScale = currentScale;
+        const center = getCenter(e.touches[0], e.touches[1]);
+        const rect = container.getBoundingClientRect();
+        const containerCenter = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        };
+        initialPosition = {
+          x: currentPosition.x + (center.x - containerCenter.x) / currentScale,
+          y: currentPosition.y + (center.y - containerCenter.y) / currentScale
+        };
         e.preventDefault();
-      } else if (e.touches.length === 1) {
+        e.stopPropagation();
+      } else if (e.touches.length === 1 && currentScale > 1) {
+        isPanning = true;
+        isPinching = false;
         lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        initialPosition = position;
+        initialPosition = currentPosition;
+        e.preventDefault();
+        e.stopPropagation();
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && isZooming) {
+      if (e.touches.length === 2 && isPinching) {
         const currentDistance = getDistance(e.touches[0], e.touches[1]);
-        const newScale = Math.max(0.5, Math.min(3, (currentDistance / initialDistance) * initialScale));
+        const scaleRatio = currentDistance / initialDistance;
+        const newScale = Math.max(0.8, Math.min(4, initialScale * scaleRatio));
+        
+        const center = getCenter(e.touches[0], e.touches[1]);
+        const rect = container.getBoundingClientRect();
+        const containerCenter = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        };
+        
+        // Ajustar posición para mantener el centro del zoom
+        const newX = initialPosition.x - (center.x - containerCenter.x) / newScale;
+        const newY = initialPosition.y - (center.y - containerCenter.y) / newScale;
+        
+        // Limitar el pan para que no se salga mucho
+        const maxPan = 250;
+        const newPosition = {
+          x: Math.max(-maxPan, Math.min(maxPan, newX)),
+          y: Math.max(-maxPan, Math.min(maxPan, newY))
+        };
+        
+        scaleRef.current = newScale;
+        positionRef.current = newPosition;
         setScale(newScale);
+        setPosition(newPosition);
         e.preventDefault();
-      } else if (e.touches.length === 1 && scale > 1 && lastTouch) {
+        e.stopPropagation();
+      } else if (e.touches.length === 1 && isPanning && lastTouch) {
+        const currentScale = scaleRef.current;
         const deltaX = e.touches[0].clientX - lastTouch.x;
         const deltaY = e.touches[0].clientY - lastTouch.y;
-        setPosition({
-          x: initialPosition.x + deltaX / scale,
-          y: initialPosition.y + deltaY / scale
-        });
+        
+        const maxPan = 250;
+        const newX = initialPosition.x + deltaX / currentScale;
+        const newY = initialPosition.y + deltaY / currentScale;
+        
+        const newPosition = {
+          x: Math.max(-maxPan, Math.min(maxPan, newX)),
+          y: Math.max(-maxPan, Math.min(maxPan, newY))
+        };
+        
+        positionRef.current = newPosition;
+        setPosition(newPosition);
+        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         e.preventDefault();
+        e.stopPropagation();
       }
     };
 
-    const handleTouchEnd = () => {
-      setIsZooming(false);
-      lastTouch = null;
-      // Resetear zoom si es muy pequeño
-      if (scale < 0.8) {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
+    const handleTouchEnd = (e: TouchEvent) => {
+      const currentScale = scaleRef.current;
+      const currentPosition = positionRef.current;
+      
+      if (e.touches.length === 0) {
+        isPinching = false;
+        isPanning = false;
+        setIsZooming(false);
+        lastTouch = null;
+        
+        // Resetear zoom si es muy pequeño
+        if (currentScale < 0.9) {
+          scaleRef.current = 1;
+          positionRef.current = { x: 0, y: 0 };
+          setScale(1);
+          setPosition({ x: 0, y: 0 });
+        }
+      } else if (e.touches.length === 1) {
+        // Si queda un dedo después de un pinch, activar pan
+        isPinching = false;
+        isPanning = true;
+        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        initialPosition = currentPosition;
       }
     };
 
     container.addEventListener('touchstart', handleTouchStart, { passive: false });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd);
+    container.addEventListener('touchend', handleTouchEnd, { passive: false });
+    container.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
     return () => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [isMobile, scale, position, isZooming]);
+  }, [isMobile]);
   
   const getSeatsByRow = (row: string) => {
     return seats.filter(seat => seat.row === row).sort((a, b) => a.number - b.number);
@@ -200,24 +290,32 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
       {/* Mapa de asientos */}
       <div className="mb-12 flex flex-col items-center gap-4">
         {/* Botón Reset Zoom solo en móvil cuando hay zoom */}
-        {isMobile && scale > 1 && (
-          <button
+        {isMobile && scale > 1.05 && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
             onClick={() => {
               setScale(1);
               setPosition({ x: 0, y: 0 });
             }}
-            className="sm:hidden fixed bottom-20 right-4 z-50 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
-            style={{ width: '48px', height: '48px' }}
+            className="sm:hidden fixed bottom-20 right-4 z-50 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white p-3 rounded-full shadow-lg flex items-center justify-center transition-all"
+            style={{ width: '52px', height: '52px' }}
+            whileTap={{ scale: 0.9 }}
           >
-            <ZoomOut className="w-5 h-5" />
-          </button>
+            <ZoomOut className="w-6 h-6" />
+          </motion.button>
         )}
         
         {/* Instrucción para zoom en móvil */}
-        {isMobile && scale === 1 && (
-          <p className="sm:hidden text-xs text-gray-500 text-center px-4">
-            👆 Usa dos dedos para hacer zoom y seleccionar asientos
-          </p>
+        {isMobile && scale <= 1.05 && (
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="sm:hidden text-xs text-gray-500 text-center px-4 mb-2"
+          >
+            👆 Usa dos dedos para hacer zoom y moverte por el mapa
+          </motion.p>
         )}
         
         {/* Vista de asientos con zoom táctil */}
@@ -231,12 +329,14 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
           }}
         >
           <div
-            className="flex items-center gap-0.5 sm:gap-4 lg:gap-8 origin-center transition-transform duration-200"
+            className="flex items-center gap-0.5 sm:gap-4 lg:gap-8 origin-center"
             style={{
               transform: isMobile 
                 ? `translate(${position.x}px, ${position.y}px) scale(${scale})`
                 : 'none',
-              transformOrigin: 'center center'
+              transformOrigin: 'center center',
+              transition: isMobile && !isZooming ? 'transform 0.15s ease-out' : 'none',
+              willChange: isMobile ? 'transform' : 'auto'
             }}
           >
           {/* Nave Izquierda */}

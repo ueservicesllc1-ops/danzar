@@ -267,11 +267,11 @@ export default function TicketPage() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden sm:relative">
+    <div className="fixed inset-0 w-full h-full overflow-hidden z-[9999]">
       {/* Main Content - Ticket Metálico 3D */}
-      <div className="w-full h-screen sm:h-full flex items-center justify-center bg-gray-100 p-0 sm:p-4 overflow-hidden">
+      <div className="w-full h-screen sm:h-full flex items-center justify-center bg-gray-100 p-0 sm:p-4 overflow-hidden relative z-[9999]">
         <div 
-          className="metallic-card-3d pointer-events-auto"
+          className="metallic-card-3d pointer-events-auto relative z-[10000]"
           style={{
             width: '100%',
             maxWidth: '390px',

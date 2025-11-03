@@ -12,69 +12,87 @@ export default function TicketLayout({
     const hideElements = () => {
       if (typeof window === 'undefined') return;
       
-      const nav = document.querySelector('nav');
-      const header = document.querySelector('header');
-      const footer = document.querySelector('footer');
+      const isMobile = window.innerWidth <= 768;
       const main = document.querySelector('main');
       
-      // Siempre ocultar en móvil (pantalla <= 768px)
-      if (window.innerWidth <= 768) {
-        if (nav) {
-          nav.style.display = 'none';
-          nav.style.setProperty('display', 'none', 'important');
+      // Buscar el Navbar usando el layout principal
+      // El Navbar está en un div con position fixed, top 0, height 50px
+      const navbarDiv = Array.from(document.querySelectorAll('div')).find(div => {
+        const computedStyle = window.getComputedStyle(div);
+        const inlineStyle = div.getAttribute('style') || '';
+        return (computedStyle.position === 'fixed' || inlineStyle.includes('position: fixed')) &&
+               (computedStyle.top === '0px' || inlineStyle.includes('top: 0')) &&
+               (computedStyle.height === '50px' || inlineStyle.includes('height: \'50px\''));
+      }) as HTMLElement | undefined;
+      
+      // Buscar Footer - está en el layout principal
+      const footerDiv = Array.from(document.querySelectorAll('div')).find(div => {
+        const computedStyle = window.getComputedStyle(div);
+        const inlineStyle = div.getAttribute('style') || '';
+        return (computedStyle.backgroundColor === 'rgb(248, 250, 252)' ||
+                inlineStyle.includes('backgroundColor: \'#f8fafc\'') ||
+                inlineStyle.includes('background-color: #f8fafc'));
+      }) as HTMLElement | undefined;
+      
+      if (isMobile) {
+        // Ocultar en móvil
+        if (navbarDiv) {
+          navbarDiv.style.cssText += 'display: none !important;';
         }
-        if (header) {
-          header.style.display = 'none';
-          header.style.setProperty('display', 'none', 'important');
-        }
-        if (footer) {
-          footer.style.display = 'none';
-          footer.style.setProperty('display', 'none', 'important');
+        if (footerDiv) {
+          footerDiv.style.cssText += 'display: none !important;';
         }
         if (main) {
-          main.style.paddingTop = '0';
-          main.style.setProperty('padding-top', '0', 'important');
-          main.style.setProperty('margin-top', '0', 'important');
+          main.style.cssText += 'padding-top: 0 !important; margin-top: 0 !important;';
         }
       } else {
         // Restaurar en desktop
-        if (nav) nav.style.display = '';
-        if (header) header.style.display = '';
-        if (footer) footer.style.display = '';
+        if (navbarDiv) {
+          navbarDiv.style.cssText = navbarDiv.style.cssText.replace(/display:\s*none\s*!important;?/gi, '');
+        }
+        if (footerDiv) {
+          footerDiv.style.cssText = footerDiv.style.cssText.replace(/display:\s*none\s*!important;?/gi, '');
+        }
         if (main) {
-          main.style.paddingTop = '';
-          main.style.marginTop = '';
+          main.style.cssText = main.style.cssText.replace(/padding-top:\s*0\s*!important;?/gi, '');
+          main.style.cssText = main.style.cssText.replace(/margin-top:\s*0\s*!important;?/gi, '');
         }
       }
     };
 
-    // Ejecutar inmediatamente y después de un pequeño delay para asegurar que el DOM esté listo
+    // Ejecutar múltiples veces para asegurar que se oculte
     hideElements();
-    setTimeout(hideElements, 0);
-    setTimeout(hideElements, 100);
+    const timer1 = setTimeout(hideElements, 0);
+    const timer2 = setTimeout(hideElements, 50);
+    const timer3 = setTimeout(hideElements, 100);
+    const timer4 = setTimeout(hideElements, 200);
     
     window.addEventListener('resize', hideElements);
     
     return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
       window.removeEventListener('resize', hideElements);
     };
   }, []);
 
   return (
     <>
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          nav,
-          header,
-          footer {
-            display: none !important;
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 768px) {
+            main > div[style*="position: fixed"][style*="top: 0"] {
+              display: none !important;
+            }
+            main {
+              padding-top: 0 !important;
+              margin-top: 0 !important;
+            }
           }
-          main {
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-          }
-        }
-      `}</style>
+        `
+      }} />
       {children}
     </>
   );
