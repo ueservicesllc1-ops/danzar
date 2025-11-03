@@ -17,6 +17,20 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'developer'];
     }
     
+    // Reglas para la colección de tickets
+    match /tickets/{ticketId} {
+      // Permitir lectura pública para verificar asientos ocupados
+      allow read: if true;
+      
+      // Permitir creación pública (cualquiera puede comprar entradas sin autenticación)
+      allow create: if true;
+      
+      // Permitir actualización solo a administradores (para verificar pagos)
+      allow update: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'developer'];
+    }
+    
     // Reglas para otras colecciones
     match /{document=**} {
       // Permitir acceso a usuarios autenticados

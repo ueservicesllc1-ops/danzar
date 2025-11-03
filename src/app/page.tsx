@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause, X } from 'lucide-react';
+import Link from 'next/link';
 
 // Imágenes del carrusel
 const heroImages = [
@@ -39,6 +40,20 @@ const heroImages = [
 export default function HomePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showHeroPopup, setShowHeroPopup] = useState(false);
+
+  // Mostrar popup hero al cargar la página (cada vez que se carga la página)
+  useEffect(() => {
+    // Esperar a que el componente esté montado en el cliente
+    if (typeof window === 'undefined') return;
+    
+    // Mostrar popup después de 2 segundos cada vez que se carga la página
+    const timer = setTimeout(() => {
+      setShowHeroPopup(true);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auto-play del carrusel
   useEffect(() => {
@@ -63,8 +78,62 @@ export default function HomePage() {
     setCurrentIndex(index);
   };
 
+  const handleAcquireTicket = () => {
+    setShowHeroPopup(false);
+  };
+
   return (
     <>
+      {/* Popup Hero */}
+      <AnimatePresence>
+        {showHeroPopup && (
+          <>
+            {/* Overlay - No se cierra al hacer clic */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
+            />
+            {/* Popup Content */}
+            <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none z-[10000]">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="pointer-events-auto relative max-w-2xl w-full"
+              >
+                {/* Imagen Flyer */}
+                <div className="relative">
+                  <img
+                    src="/images/flyer.jpg"
+                    alt="Flyer DanZar"
+                    className="w-full h-auto rounded-lg shadow-2xl"
+                  />
+                  
+                  {/* Botón "Compra tu Entrada Aquí" */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+                    <Link href="/eventos" onClick={handleAcquireTicket}>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-xl transition-all duration-300"
+                        style={{
+                          boxShadow: '0 10px 25px rgba(147, 51, 234, 0.5)'
+                        }}
+                      >
+                        Compra tu Entrada Aquí
+                      </motion.button>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="relative h-[80vh] overflow-hidden">
         {/* Carrusel de imágenes */}
         <div className="relative w-full h-full">

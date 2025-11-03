@@ -29,9 +29,9 @@ export default function Footer() {
             Contacto
           </h3>
           <div style={{ lineHeight: '1.8' }}>
-            <p><strong>Email:</strong> info@danzar.com</p>
-            <p><strong>Teléfono:</strong> +1 (555) 123-4567</p>
-            <p><strong>Dirección:</strong> Calle Principal 123, Ciudad, País</p>
+            <p><strong>Email:</strong> danielasalazardanza@gmail.com</p>
+            <p><strong>Teléfono:</strong> +584246727437</p>
+            <p><strong>Dirección:</strong> Ave. Bolívar / Centro Comercial Oliva / Local B15 - Ciudad Ojeda - Venezuela</p>
           </div>
         </div>
 
@@ -191,7 +191,8 @@ export default function Footer() {
         borderTop: '1px solid #e5e7eb',
         color: '#6b7280'
       }}>
-        <p>© 2024 DanZar. Todos los derechos reservados.</p>
+        <p>© 2025 DanZar. Todos los derechos reservados.</p>
+        <p style={{ marginTop: '8px', fontSize: '14px' }}>Powered and designed by Freedom Labs</p>
       </div>
     </div>
   );
