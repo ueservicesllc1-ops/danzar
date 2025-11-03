@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Share2, Calendar, MapPin, Clock, User, Ticket as TicketIcon, Copy, Check } from 'lucide-react';
+import { X, Calendar, MapPin, Clock, User, Ticket as TicketIcon, Copy, Check } from 'lucide-react';
 import { Seat, Event } from '@/types/events';
 import { Button } from '@/components/ui/button';
 
@@ -71,22 +71,6 @@ export default function TicketModal({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
-    }
-  };
-
-  const handleDownload = () => {
-    // En una aplicación real, aquí generarías un PDF
-    alert('Descargando ticket...');
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `Ticket - ${event.title}`,
-        text: `Mi ticket para ${event.title} - Código: ${confirmationCode}`,
-      });
-    } else {
-      alert('Función de compartir no disponible');
     }
   };
 
@@ -257,7 +241,7 @@ export default function TicketModal({
                     <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                       <p className="text-sm text-yellow-800">
                         <strong>⚠️ Ticket Pendiente de Verificación:</strong> Este ticket será activado luego de verificar el pago. 
-                        Será notificado dentro de las próximas 24 horas. Guarda este ticket para cuando sea activado.
+                        Será notificado dentro de las próximas 24 horas.
                       </p>
                     </div>
                   </div>
@@ -268,22 +252,6 @@ export default function TicketModal({
               {/* Action Buttons */}
               <div className="px-8 pb-8 pt-4 flex justify-center bg-white rounded-b-3xl">
                 <div className="w-full max-w-3xl">
-                  <div className="flex gap-4 mt-6">
-                    <Button
-                      onClick={handleDownload}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Descargar Ticket
-                    </Button>
-                    <Button
-                      onClick={handleShare}
-                      variant="outline"
-                      className="px-6 py-6 rounded-xl border-2 border-gray-300 hover:border-purple-600 hover:bg-purple-50 transition-all duration-300"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </Button>
-                  </div>
 
                   {/* Ticket Link Notice */}
                   <div className="mt-4 p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">

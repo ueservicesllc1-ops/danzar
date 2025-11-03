@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, DollarSign, Users, QrCode, CheckCircle, Eye, Download } from 'lucide-react';
-import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { Ticket, DollarSign, Users, QrCode, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
+import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Sale {
@@ -81,6 +81,28 @@ export default function EventSales() {
     } catch (error) {
       console.error('Error aprobando pago:', error);
       alert('Error al aprobar el pago. Contacta soporte.');
+    }
+  };
+
+  const handleDeleteSale = async (id: string, customerName: string) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar la entrada vendida de ${customerName}?\n\nEsta acción no se puede deshacer.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const ticketRef = doc(db, 'tickets', id);
+      await deleteDoc(ticketRef);
+      alert('Entrada vendida eliminada exitosamente.');
+      loadSales();
+      if (selectedSale?.id === id) {
+        setShowDetails(false);
+        setSelectedSale(null);
+      }
+    } catch (error) {
+      console.error('Error eliminando entrada:', error);
+      alert('Error al eliminar la entrada. Contacta soporte.');
     }
   };
 
@@ -326,6 +348,36 @@ export default function EventSales() {
                       </button>
                       ) : null;
                     })()}
+                    <button
+                      onClick={() => handleDeleteSale(
+                        sale.id,
+                        `${sale.customer?.firstName || ''} ${sale.customer?.lastName || ''}`.trim() || 'Cliente'
+                      )}
+                      style={{
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#dc2626';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#ef4444';
+                      }}
+                      title="Eliminar entrada vendida"
+                    >
+                      <Trash2 size={16} />
+                      Eliminar
+                    </button>
                     <div title={sale.qrCode}>
                       <QrCode size={24} color="#6b7280" />
                     </div>
@@ -442,15 +494,43 @@ export default function EventSales() {
                   );
                 })()}
 
-                {selectedSale.status === 'pending' && (
+                <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                  {selectedSale.status === 'pending' && (
+                    <button
+                      onClick={() => {
+                        handleApprovePayment(selectedSale.id);
+                        setShowDetails(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <CheckCircle size={20} />
+                      Activar Ticket
+                    </button>
+                  )}
                   <button
                     onClick={() => {
-                      handleApprovePayment(selectedSale.id);
-                      setShowDetails(false);
+                      handleDeleteSale(
+                        selectedSale.id,
+                        `${selectedSale.customer?.firstName || ''} ${selectedSale.customer?.lastName || ''}`.trim() || 'Cliente'
+                      );
                     }}
                     style={{
                       width: '100%',
-                      backgroundColor: '#10b981',
+                      backgroundColor: '#ef4444',
                       color: 'white',
                       padding: '12px',
                       borderRadius: '6px',
@@ -461,13 +541,20 @@ export default function EventSales() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#dc2626';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#ef4444';
                     }}
                   >
-                    <CheckCircle size={20} />
-                    Activar Ticket
+                    <Trash2 size={20} />
+                    Eliminar Entrada
                   </button>
-                )}
+                </div>
               </motion.div>
             </motion.div>
           </>
