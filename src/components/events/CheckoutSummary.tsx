@@ -167,16 +167,6 @@ export default function CheckoutSummary({
         🔒 Pago seguro y protegido
       </p>
 
-      {/* Test Email Button */}
-      {onTestEmail && (
-        <Button
-          onClick={onTestEmail}
-          variant="outline"
-          className="w-full mt-3 gap-2 bg-purple-600 hover:bg-purple-700 text-white border-purple-600"
-        >
-          📧 Test Email
-        </Button>
-      )}
     </motion.div>
   );
 }

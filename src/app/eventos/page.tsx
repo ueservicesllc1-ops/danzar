@@ -594,12 +594,6 @@ export default function EventosPage() {
               style={{ padding: '2rem' }}
             >
               <h3 className="text-xl font-bold text-gray-900 mb-4">{mockEvent.title}</h3>
-              <Button
-                onClick={() => setShowMobilePreviewModal(true)}
-                className="w-full mb-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-              >
-                📱 Vista Previa Móvil
-              </Button>
               <p className="text-lg text-gray-700 mb-4">{mockEvent.artist}</p>
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-gray-600">

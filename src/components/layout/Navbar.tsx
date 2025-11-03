@@ -73,34 +73,6 @@ export default function Navbar() {
         </button>
       </Link>
 
-      <Link href="/mi-ticket">
-        <button style={{
-          backgroundColor: 'transparent',
-          color: '#3b82f6',
-          padding: '8px 16px',
-          border: '1px solid #3b82f6',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: '600',
-          transition: 'all 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}
-        onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.backgroundColor = '#3b82f6';
-          (e.target as HTMLElement).style.color = 'white';
-        }}
-        onMouseLeave={(e) => {
-          (e.target as HTMLElement).style.backgroundColor = 'transparent';
-          (e.target as HTMLElement).style.color = '#3b82f6';
-        }}>
-          <Ticket size={16} />
-          Mi Ticket
-        </button>
-      </Link>
-
       {/* Usuario logueado o botones de auth */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         {user ? (

@@ -71,7 +71,7 @@ export default function PaymentModal({
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
               className="bg-white shadow-2xl pointer-events-auto"
-              style={{ width: '500px', height: '700px', border: '1px solid #9B0000', boxSizing: 'border-box' }}
+              style={{ width: '500px', height: '550px', border: '1px solid #9B0000', boxSizing: 'border-box' }}
             >
               <div style={{ width: 'calc(100% - 10px)', height: 'calc(100% - 10px)', margin: '5px', border: '1px solid #efb810', padding: '20px' }}>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 20px 0' }}>Realizar Pago</h2>
@@ -125,27 +125,6 @@ export default function PaymentModal({
                       }}
                     >
                       PayPal
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        alert('Pago con Transferencia procesado exitosamente');
-                        onPaymentSuccess({ id: 'transfer-' + Date.now() });
-                        onClose();
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '15px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        backgroundColor: '#9B0000',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
-                        borderRadius: '4px'
-                      }}
-                    >
-                      Transferencia
                     </button>
                     
                     <button
