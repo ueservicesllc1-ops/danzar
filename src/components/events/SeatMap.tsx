@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Seat, SeatStatus, SeatCategory } from '@/types/events';
-import { Monitor } from 'lucide-react';
+import { Monitor, ZoomIn, ZoomOut, X } from 'lucide-react';
 
 interface SeatMapProps {
   seats: Seat[];
@@ -47,11 +47,88 @@ const categoryLabels = {
 
 export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isZooming, setIsZooming] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const rows = Array.from(new Set(seats.map(seat => seat.row))).sort();
   
   useEffect(() => {
     setIsMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Manejo de zoom con dos dedos (pinch to zoom)
+  useEffect(() => {
+    if (!isMobile || !containerRef.current) return;
+
+    const container = containerRef.current;
+    let initialDistance = 0;
+    let initialScale = 1;
+    let initialPosition = { x: 0, y: 0 };
+    let lastTouch: { x: number; y: number } | null = null;
+
+    const getDistance = (touch1: Touch, touch2: Touch) => {
+      const dx = touch1.clientX - touch2.clientX;
+      const dy = touch1.clientY - touch2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        setIsZooming(true);
+        initialDistance = getDistance(e.touches[0], e.touches[1]);
+        initialScale = scale;
+        e.preventDefault();
+      } else if (e.touches.length === 1) {
+        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        initialPosition = position;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && isZooming) {
+        const currentDistance = getDistance(e.touches[0], e.touches[1]);
+        const newScale = Math.max(0.5, Math.min(3, (currentDistance / initialDistance) * initialScale));
+        setScale(newScale);
+        e.preventDefault();
+      } else if (e.touches.length === 1 && scale > 1 && lastTouch) {
+        const deltaX = e.touches[0].clientX - lastTouch.x;
+        const deltaY = e.touches[0].clientY - lastTouch.y;
+        setPosition({
+          x: initialPosition.x + deltaX / scale,
+          y: initialPosition.y + deltaY / scale
+        });
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsZooming(false);
+      lastTouch = null;
+      // Resetear zoom si es muy pequeño
+      if (scale < 0.8) {
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+      }
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobile, scale, position, isZooming]);
   
   const getSeatsByRow = (row: string) => {
     return seats.filter(seat => seat.row === row).sort((a, b) => a.number - b.number);
@@ -122,9 +199,48 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
 
       {/* Mapa de asientos */}
       <div className="mb-12 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8">
+        {/* Botón Reset Zoom solo en móvil cuando hay zoom */}
+        {isMobile && scale > 1 && (
+          <button
+            onClick={() => {
+              setScale(1);
+              setPosition({ x: 0, y: 0 });
+            }}
+            className="sm:hidden fixed bottom-20 right-4 z-50 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
+            style={{ width: '48px', height: '48px' }}
+          >
+            <ZoomOut className="w-5 h-5" />
+          </button>
+        )}
+        
+        {/* Instrucción para zoom en móvil */}
+        {isMobile && scale === 1 && (
+          <p className="sm:hidden text-xs text-gray-500 text-center px-4">
+            👆 Usa dos dedos para hacer zoom y seleccionar asientos
+          </p>
+        )}
+        
+        {/* Vista de asientos con zoom táctil */}
+        <div 
+          ref={containerRef}
+          className="relative overflow-hidden"
+          style={{
+            touchAction: isMobile ? 'none' : 'auto',
+            width: '100%',
+            maxWidth: '100%'
+          }}
+        >
+          <div
+            className="flex items-center gap-0.5 sm:gap-4 lg:gap-8 origin-center transition-transform duration-200"
+            style={{
+              transform: isMobile 
+                ? `translate(${position.x}px, ${position.y}px) scale(${scale})`
+                : 'none',
+              transformOrigin: 'center center'
+            }}
+          >
           {/* Nave Izquierda */}
-          <div className="space-y-1 flex flex-col items-center">
+          <div className="space-y-0.5 sm:space-y-1 flex flex-col items-center">
             {rows.map((row, rowIndex) => {
               const leftNaveSeats = getLeftNaveSeats(row);
               const category = leftNaveSeats[0]?.category;
@@ -136,10 +252,10 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: rowIndex * 0.05 }}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-0.5 sm:gap-1"
                   >
                   {/* Etiqueta de fila */}
-                  <div className="w-8 text-center font-bold text-gray-700 text-sm">
+                  <div className="w-3 sm:w-8 text-center font-bold text-gray-700 text-[7px] sm:text-sm">
                     {row}
                   </div>
 
@@ -161,8 +277,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                         onClick={() => handleSeatClick(seat)}
                         disabled={!isClickable}
                         className={`
-                          w-8 h-8 rounded transition-all duration-200
-                          flex items-center justify-center text-white text-xs font-semibold
+                          w-3 h-3 sm:w-8 sm:h-8 rounded transition-all duration-200
+                          flex items-center justify-center text-white text-[7px] sm:text-xs font-semibold
                           ${colorClass}
                           ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                           shadow-sm hover:shadow-md
@@ -179,7 +295,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                 return (
                   <div
                     key={row}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-0.5 sm:gap-1"
                   >
                     {/* Etiqueta de fila */}
                     <div className="w-8 text-center font-bold text-gray-700 text-sm">
@@ -199,8 +315,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                           onClick={() => handleSeatClick(seat)}
                           disabled={!isClickable}
                           className={`
-                            w-8 h-8 rounded transition-all duration-200
-                            flex items-center justify-center text-white text-xs font-semibold
+                            w-3 h-3 sm:w-8 sm:h-8 rounded transition-all duration-200
+                            flex items-center justify-center text-white text-[7px] sm:text-xs font-semibold
                             ${colorClass}
                             ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                             shadow-sm hover:shadow-md
@@ -218,13 +334,13 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
           </div>
 
           {/* Pasillo Central */}
-          <div className="w-4 sm:w-12 lg:w-20 flex flex-col items-center justify-center">
-            <div className="text-[10px] sm:text-xs text-gray-400 font-semibold mb-1 sm:mb-2 hidden sm:block">PASILLO</div>
+          <div className="w-2 sm:w-12 lg:w-20 flex flex-col items-center justify-center">
+            <div className="text-[8px] sm:text-xs text-gray-400 font-semibold mb-0.5 sm:mb-2 hidden sm:block">PASILLO</div>
             <div className="w-px h-full bg-gray-300"></div>
           </div>
 
           {/* Nave Derecha */}
-          <div className="space-y-1 flex flex-col items-center">
+          <div className="space-y-0.5 sm:space-y-1 flex flex-col items-center">
             {rows.map((row, rowIndex) => {
               const rightNaveSeats = getRightNaveSeats(row);
               const category = rightNaveSeats[0]?.category;
@@ -236,7 +352,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: rowIndex * 0.05 }}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-0.5 sm:gap-1"
                   >
                   {/* Asientos de nave derecha */}
                   {rightNaveSeats.map((seat, seatIndex) => {
@@ -256,8 +372,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                         onClick={() => handleSeatClick(seat)}
                         disabled={!isClickable}
                         className={`
-                          w-8 h-8 rounded transition-all duration-200
-                          flex items-center justify-center text-white text-xs font-semibold
+                          w-3 h-3 sm:w-8 sm:h-8 rounded transition-all duration-200
+                          flex items-center justify-center text-white text-[7px] sm:text-xs font-semibold
                           ${colorClass}
                           ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                           shadow-sm hover:shadow-md
@@ -270,7 +386,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                   })}
 
                   {/* Etiqueta de fila */}
-                  <div className="w-8 text-center font-bold text-gray-700 text-sm ml-1">
+                  <div className="w-3 sm:w-8 text-center font-bold text-gray-700 text-[7px] sm:text-sm ml-1">
                     {row}
                   </div>
                   </motion.div>
@@ -279,7 +395,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                 return (
                   <div
                     key={row}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-0.5 sm:gap-1"
                   >
                     {/* Asientos de nave derecha */}
                     {getRightNaveSeats(row).map((seat) => {
@@ -294,8 +410,8 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                           onClick={() => handleSeatClick(seat)}
                           disabled={!isClickable}
                           className={`
-                            w-8 h-8 rounded transition-all duration-200
-                            flex items-center justify-center text-white text-xs font-semibold
+                            w-3 h-3 sm:w-8 sm:h-8 rounded transition-all duration-200
+                            flex items-center justify-center text-white text-[7px] sm:text-xs font-semibold
                             ${colorClass}
                             ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                             shadow-sm hover:shadow-md
@@ -316,6 +432,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
               }
             })}
           </div>
+        </div>
         </div>
       </div>
 

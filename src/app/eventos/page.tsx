@@ -568,8 +568,17 @@ export default function EventosPage() {
       {/* Main Content */}
       <div className="w-full py-4 sm:py-6 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 px-2 sm:px-4 lg:px-8" style={{ maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
-          {/* Checkout Summary - Primero en móvil */}
-          <div className="lg:w-80 flex flex-col gap-3 order-2 lg:order-1">
+          {/* Seat Map - Izquierda */}
+          <div className="flex-1">
+            <SeatMap
+              seats={seats}
+              onSeatSelect={handleSeatSelect}
+              selectedSeats={selectedSeats}
+            />
+          </div>
+
+          {/* Checkout Summary - Derecha */}
+          <div className="lg:w-80 flex flex-col gap-3">
             <CheckoutSummary
               event={mockEvent}
               selectedSeats={selectedSeats}
@@ -583,39 +592,29 @@ export default function EventosPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200"
-              style={{ padding: '1rem sm:1.5rem lg:2rem' }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 sm:p-6"
             >
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-4">{mockEvent.title}</h3>
-              <p className="text-sm sm:text-lg text-gray-700 mb-3 sm:mb-4">{mockEvent.artist}</p>
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <h3 className="text-xl font-bold text-gray-900 mb-4 sm:mb-2">{mockEvent.title}</h3>
+              <p className="text-lg text-gray-700 mb-4 sm:mb-3">{mockEvent.artist}</p>
+              <div className="space-y-3 sm:space-y-2">
+                <div className="flex items-center gap-2 text-base text-gray-600 sm:text-sm">
+                  <Calendar className="w-5 h-5 flex-shrink-0 sm:w-4 sm:h-4" />
                   <span>{mockEvent.date}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-base text-gray-600 sm:text-sm">
+                  <Calendar className="w-5 h-5 flex-shrink-0 sm:w-4 sm:h-4" />
                   <span>{mockEvent.time}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-base text-gray-600 sm:text-sm">
+                  <MapPin className="w-5 h-5 flex-shrink-0 sm:w-4 sm:h-4" />
                   <span className="break-words">{mockEvent.venue}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-base text-gray-600 sm:text-sm">
+                  <Users className="w-5 h-5 flex-shrink-0 sm:w-4 sm:h-4" />
                   <span>{seats.filter(s => s.status === 'available').length} asientos disponibles</span>
                 </div>
               </div>
             </motion.div>
-          </div>
-
-          {/* Seat Map */}
-          <div className="flex-1 order-1 lg:order-2">
-            <SeatMap
-              seats={seats}
-              onSeatSelect={handleSeatSelect}
-              selectedSeats={selectedSeats}
-            />
           </div>
         </div>
       </div>
@@ -651,9 +650,9 @@ export default function EventosPage() {
                 style={{ border: '1px solid #9B0000', zIndex: 1001, maxHeight: '90vh', overflowY: 'auto' }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div style={{ width: 'calc(100% - 10px)', margin: '5px', border: '1px solid #efb810', padding: '1rem sm:1.25rem lg:1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem sm:1.25rem' }}>
-                    <h2 style={{ fontSize: '1.125rem sm:1.5rem lg:1.5rem', fontWeight: 'bold', margin: 0 }}>Datos del Comprador</h2>
+                <div className="w-[calc(100%-10px)] m-[5px] border border-[#efb810] p-6 sm:p-4">
+                  <div className="flex justify-between items-center mb-6 sm:mb-4">
+                    <h2 className="text-2xl font-bold m-0 sm:text-lg">Datos del Comprador</h2>
                     <button
                       onClick={() => setShowCustomerDataModal(false)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer' }}
