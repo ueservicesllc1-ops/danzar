@@ -215,7 +215,7 @@ export default function EventSales() {
                   style={{
                     backgroundColor: '#f8fafc',
                     borderRadius: '8px',
-                    padding: '20px',
+                    padding: '12px 16px',
                     border: '1px solid #e5e7eb',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -223,27 +223,27 @@ export default function EventSales() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                      <Users size={20} color="#6b7280" />
-                      <strong style={{ color: '#1f2937' }}>{sale.customer.firstName} {sale.customer.lastName}</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                      <Users size={18} color="#6b7280" />
+                      <strong style={{ color: '#1f2937', fontSize: '15px' }}>{sale.customer.firstName} {sale.customer.lastName}</strong>
                       <span style={{
                         backgroundColor: sale.status === 'approved' ? '#dcfce7' : '#fef3c7',
                         color: sale.status === 'approved' ? '#166534' : '#92400e',
-                        padding: '2px 8px',
+                        padding: '2px 6px',
                         borderRadius: '12px',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: '600'
                       }}>
                         {sale.status === 'approved' ? 'Confirmado' : 'Pendiente'}
                       </span>
                     </div>
-                    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '4px' }}>
+                    <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
                       {sale.customer.email}
                     </p>
-                    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '4px' }}>
+                    <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
                       Asientos: {seatsDisplay} | ${sale.totalAmount} • {sale.paymentMethod}
                     </p>
-                    <p style={{ color: '#9ca3af', fontSize: '12px' }}>
+                    <p style={{ color: '#9ca3af', fontSize: '11px' }}>
                       {sale.createdAt?.toDate ? sale.createdAt.toDate().toLocaleString() : sale.createdAt?.toString()}
                     </p>
                   </div>

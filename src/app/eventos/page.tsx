@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -85,6 +85,34 @@ export default function EventosPage() {
   const [ticketStatus, setTicketStatus] = useState<'pending' | 'approved' | 'used' | null>(null);
   const [loadingTicketStatus, setLoadingTicketStatus] = useState(false);
   const [ticketSeats, setTicketSeats] = useState<Array<{row: string, number: number}>>([]);
+  const [isFlipped, setIsFlipped] = useState(false); // false = muestra reverso (dorado con logo), true = muestra ticket (rota 180deg)
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Efecto de movimiento 3D con cursor/dedo
+  const handleCardMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
+    const rotateY = ((x / rect.width) - 0.5) * 20;
+    const rotateX = ((y / rect.height) - 0.5) * -20;
+
+    // Permitir movimiento 3D solo cuando está volteado (mostrando el ticket)
+    if (isFlipped) {
+      card.style.setProperty('--rotate-y', `${rotateY}deg`);
+      card.style.setProperty('--rotate-x', `${rotateX}deg`);
+    }
+  };
+
+  const resetCardPosition = () => {
+    if (cardRef.current) {
+      cardRef.current.style.setProperty('--rotate-y', '0deg');
+      cardRef.current.style.setProperty('--rotate-x', '0deg');
+    }
+  };
 
   // Asegurar que solo se renderice en el cliente
   useEffect(() => {
@@ -140,11 +168,17 @@ export default function EventosPage() {
               status?: string;
               used?: boolean;
               seats?: Array<{row: string, number: number}>;
-              createdAt?: any;
+              createdAt?: Date | { seconds: number; nanoseconds: number } | unknown;
             }>;
             const lastTicket = tickets.sort((a, b) => {
-              const aDate = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
-              const bDate = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+              const aCreatedAt = a.createdAt as { toDate?: () => Date } | Date | string | undefined;
+              const bCreatedAt = b.createdAt as { toDate?: () => Date } | Date | string | undefined;
+              const aDate = (aCreatedAt && typeof aCreatedAt === 'object' && 'toDate' in aCreatedAt && aCreatedAt.toDate) 
+                ? aCreatedAt.toDate() 
+                : (aCreatedAt instanceof Date ? aCreatedAt : new Date(0));
+              const bDate = (bCreatedAt && typeof bCreatedAt === 'object' && 'toDate' in bCreatedAt && bCreatedAt.toDate) 
+                ? bCreatedAt.toDate() 
+                : (bCreatedAt instanceof Date ? bCreatedAt : new Date(0));
               return bDate.getTime() - aDate.getTime();
             })[0];
             
@@ -294,13 +328,47 @@ export default function EventosPage() {
         },
         seats: selectedSeats.map(s => ({ id: s.id, row: s.row, number: s.number })),
         totalAmount: selectedSeats.length === 3 ? 30 : selectedSeats.length === 5 ? 45 : selectedSeats.reduce((sum, s) => sum + s.price, 0),
-        status: 'pending',
+        // Detectar si es PayPal o Pago Móvil
+        // PayPal tiene paypalOrderId, paypalStatus, o soft_descriptor con "PAYPAL"
+        // Pago Móvil tiene screenshot o fileName
+        paymentMethod: (() => {
+          const hasPayPalOrderId = !!(details as { paypalOrderId?: string }).paypalOrderId;
+          const hasPayPalStatus = !!(details as { paypalStatus?: string }).paypalStatus;
+          const softDescriptor = (details as { soft_descriptor?: string }).soft_descriptor || '';
+          const purchaseUnits = (details as { purchase_units?: Array<{ soft_descriptor?: string }> }).purchase_units;
+          const hasSoftDescriptorPayPal = softDescriptor.toUpperCase().includes('PAYPAL') ||
+            (purchaseUnits && purchaseUnits.length > 0 && purchaseUnits[0]?.soft_descriptor?.toUpperCase().includes('PAYPAL'));
+          const hasPayPalId = details.id?.toLowerCase().includes('paypal') || false;
+          const hasScreenshot = !!(details.screenshot || details.fileName);
+          
+          if (hasPayPalOrderId || hasPayPalStatus || hasSoftDescriptorPayPal || hasPayPalId) {
+            return 'PayPal';
+          }
+          if (hasScreenshot) {
+            return 'Pago Móvil';
+          }
+          // Por defecto PayPal si no tiene screenshot (probablemente es PayPal)
+          return 'PayPal';
+        })(),
+        // Si es PayPal exitoso, estado "approved". Si es Pago Móvil, "pending" hasta verificación
+        status: (() => {
+          const hasPayPalOrderId = !!(details as { paypalOrderId?: string }).paypalOrderId;
+          const paypalStatus = (details as { paypalStatus?: string }).paypalStatus;
+          const hasScreenshot = !!(details.screenshot || details.fileName);
+          
+          if (hasPayPalOrderId || paypalStatus === 'COMPLETED') {
+            return 'approved';
+          }
+          if (hasScreenshot) {
+            return 'pending';
+          }
+          // PayPal por defecto es approved (el pago ya fue exitoso si llegó aquí)
+          return 'approved';
+        })(),
         confirmationCode: code,
         qrCode: `TICKET-${code}-${mockEvent.id}`,
         paymentDetails: details,
         createdAt: new Date(),
-        paymentMethod: details.id?.includes('paypal') ? 'PayPal' : 
-                       details.id?.includes('transfer') ? 'Transferencia' : 'Pago Móvil'
       };
       
       await addDoc(collection(db, 'tickets'), ticketData);
@@ -419,9 +487,14 @@ export default function EventosPage() {
       alert(`Email de prueba enviado exitosamente a ${testEmailAddress}`);
       setShowTestEmailModal(false);
       setTestEmailAddress('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error);
-      alert(`Error: ${error.text || error.message || 'Error al enviar email'}`);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'text' in error
+        ? String(error.text)
+        : 'Error al enviar email';
+      alert(`Error: ${errorMessage}`);
     } finally {
       setSendingTestEmail(false);
     }
@@ -829,116 +902,221 @@ export default function EventosPage() {
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
             />
             <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none z-[10000]">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, rotateY: 90 }}
-                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                exit={{ opacity: 0, scale: 0.9, rotateY: 90 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white pointer-events-auto rounded-none shadow-2xl relative flex flex-col"
+              <div 
+                className="metallic-card-3d pointer-events-auto"
                 style={{
                   width: '390px',
                   maxWidth: '100vw',
-                  height: '844px',
-                  maxHeight: '90vh'
+                  height: '750px',
+                  maxHeight: '85vh'
                 }}
-                onClick={(e) => e.stopPropagation()}
+                onMouseMove={handleCardMove}
+                onMouseLeave={resetCardPosition}
+                onTouchMove={handleCardMove}
+                onTouchEnd={resetCardPosition}
               >
-                {/* Botón cerrar */}
-                <button
-                  onClick={() => setShowMobilePreviewModal(false)}
-                  className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all"
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  ref={cardRef}
+                  className={`metallic-card-inner pointer-events-auto ${isFlipped ? 'flipped' : ''}`}
+                  style={{
+                    '--rotate-y': '0deg',
+                    '--rotate-x': '0deg'
+                  } as React.CSSProperties & { '--rotate-y'?: string; '--rotate-x'?: string }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('🔄 Click en card, isFlipped actual:', isFlipped);
+                    const newFlipped = !isFlipped;
+                    console.log('🔄 Nuevo estado:', newFlipped);
+                    setIsFlipped(newFlipped);
+                  }}
                 >
-                  <X className="w-5 h-5" />
-                </button>
-
-                {/* Contenido del móvil - Ticket en blanco para diseñar */}
-                <div className="flex-1 overflow-y-auto">
-                  {/* Header - Franja negra */}
-                  <div className="w-full bg-black flex-shrink-0" style={{ height: '40px' }} />
-                  
-                  {/* Banner arriba */}
-                  <div 
-                    className="w-full h-[150px] bg-cover bg-center flex-shrink-0"
-                    style={{ backgroundImage: `url(${mockEvent.image})` }}
-                  />
-                  
-                  {/* Palabra Ticket */}
-                  <div className="px-4 pt-6 pb-4" style={{ marginTop: '20px' }}>
-                    <h2 className="text-4xl font-bold text-gray-900 text-center">TICKET</h2>
-                  </div>
-                  
-                  {/* Nombre del concierto */}
-                  <div className="px-4 pt-8 pb-4 relative" style={{ zIndex: 10 }}>
-                    <h3 className="text-3xl font-semibold text-gray-900 text-center">{mockEvent.title}</h3>
-                  </div>
-                  
-                  {/* Código QR grande */}
-                  <div className="px-2 pt-8 pb-4 flex justify-center" style={{ marginTop: '-20px' }}>
-                    <MobileQRCode
-                      value={`TICKET-PREVIEW-${mockEvent.id}`}
-                      size={380}
-                      level="H"
-                      includeMargin={true}
-                      imageSettings={{
-                        src: "/images/logo.png",
-                        height: 75,
-                        width: 75,
-                        excavate: true,
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Detalles del evento */}
-                  <div className="px-4 pt-6 pb-4 space-y-4" style={{ marginTop: '-20px' }}>
-                    <div className="flex items-center justify-center gap-2 text-gray-700">
-                      <Calendar className="w-5 h-5" />
-                      <span className="text-base">{mockEvent.date} - {mockEvent.time}</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 text-gray-700">
-                      <MapPin className="w-5 h-5" />
-                      <span className="text-base">{mockEvent.venue}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Asientos comprados y Estado del ticket */}
-                  <div className="px-4 pt-12 pb-4" style={{ marginTop: '30px' }}>
-                    {/* Asientos comprados */}
-                    {ticketSeats.length > 0 && (
-                      <div className="text-center mb-4" style={{ marginTop: '-20px' }}>
-                        <p className="text-sm text-gray-600 mb-3">Asientos:</p>
-                        <div className="flex flex-wrap justify-center gap-2">
-                          {ticketSeats.map((s, index) => (
-                            <div
-                              key={`${s.row}${s.number}-${index}`}
-                              className="bg-purple-600 text-white font-bold text-lg px-4 py-2 min-w-[60px] text-center"
-                              style={{ borderRadius: '0' }}
-                            >
-                              {s.row}{s.number}
-                            </div>
-                          ))}
-                        </div>
+                  {/* Reverso del ticket - Visible inicialmente */}
+                  <motion.div
+                    className="metallic-card-face metallic-back pointer-events-auto rounded-none shadow-2xl relative flex flex-col items-center justify-center absolute inset-0 w-full h-full"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      transform: `rotateY(0deg)`
+                    }}
+                  >
+                    {/* Indicador de click en reverso */}
+                    {!isFlipped && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-400 text-black text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+                        👆 Toca para voltear
                       </div>
                     )}
                     
-                    {/* Estado del ticket */}
-                    <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4" style={{ marginTop: '20px' }}>
-                      <div className="flex items-center justify-center gap-2">
-                        <CheckCircle className="w-6 h-6 text-green-600" />
-                        <span className="text-lg font-bold text-green-800">
-                          {ticketStatus === 'pending' ? 'PENDIENTE' : 
-                           ticketStatus === 'used' ? 'REDIMIDO' : 
-                           ticketStatus === 'approved' ? 'VERIFICADO' : 'VERIFICADO'}
-                        </span>
-                      </div>
+                    {/* Solo el logo en el centro sobre fondo dorado */}
+                    <div className="flex items-center justify-center w-full h-full">
+                      <img 
+                        src="/images/logo.png" 
+                        alt="Logo DanZar" 
+                        className="w-48 h-48 object-contain opacity-90"
+                        style={{
+                          filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.3))'
+                        }}
+                      />
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  {/* Franja negra abajo */}
-                  <div className="w-full bg-black flex-shrink-0" style={{ height: '40px', marginTop: 'auto' }} />
-                  
-                  {/* Contenido del ticket aquí */}
-                </div>
+                  {/* Frente del ticket con efecto metálico - Visible cuando está volteado */}
+                  <motion.div
+                    className="metallic-card-face metallic-front pointer-events-auto rounded-none shadow-2xl relative flex flex-col absolute inset-0 w-full h-full"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                      transform: `rotateY(180deg) rotateY(var(--rotate-y, 0deg)) rotateX(var(--rotate-x, 0deg))`
+                    }}
+                  >
+                    {/* Indicador de click en frente (cuando se muestra el ticket) */}
+                    {isFlipped && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-400 text-black text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+                        👆 Toca para voltear
+                      </div>
+                    )}
+                    {/* Botón cerrar */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMobilePreviewModal(false);
+                      }}
+                      className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+
+                    {/* Contenido del móvil - Ticket con efecto metálico */}
+                    <div className="flex-1 overflow-hidden">
+                      {/* Header - Franja negra */}
+                      <div className="w-full bg-black flex-shrink-0" style={{ height: '40px' }} />
+                      
+                      {/* Banner arriba */}
+                      <div 
+                        className="w-full h-[150px] bg-cover bg-center flex-shrink-0"
+                        style={{ backgroundImage: `url(${mockEvent.image})` }}
+                      />
+                      
+                      {/* Palabra Ticket */}
+                      <div className="px-4 pt-6 pb-4 flex justify-center items-center" style={{ marginTop: '20px' }}>
+                        <h2 className="text-black text-3xl font-bold text-center">TICKET</h2>
+                      </div>
+                      
+                      {/* Espacio reservado para mantener el layout */}
+                      <div className="px-4 pt-8 pb-4 relative" style={{ zIndex: 10, height: '40px' }}>
+                        {/* Nombre del concierto eliminado pero espacio mantenido */}
+                      </div>
+                      
+                      {/* Código QR grande con marco metálico (sin fondo blanco) */}
+                      <div className="px-2 pt-8 pb-4 flex justify-center" style={{ marginTop: '-20px' }}>
+                        <div 
+                          className="metallic-border-gold p-2"
+                          style={{
+                            background: 'transparent',
+                            boxShadow: '0 0 30px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 215, 0, 0.1)'
+                          }}
+                        >
+                          <div style={{ backgroundColor: 'transparent' }}>
+                            <MobileQRCode
+                              value={`TICKET-PREVIEW-${mockEvent.id}`}
+                              size={280}
+                              level="H"
+                              includeMargin={false}
+                              imageSettings={{
+                                src: "/images/logo.png",
+                                height: 55,
+                                width: 55,
+                                excavate: true,
+                              }}
+                              className="qr-code-transparent"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Detalles del evento */}
+                      <div className="px-4 pt-6 pb-4 space-y-4" style={{ marginTop: '20px' }}>
+                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                          <Calendar className="w-5 h-5" />
+                          <span className="text-base">{mockEvent.date} - {mockEvent.time}</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                          <MapPin className="w-5 h-5" />
+                          <span className="text-base">{mockEvent.venue}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Asientos comprados y Estado del ticket */}
+                      <div className="px-4 pt-12 pb-4" style={{ marginTop: '20px' }}>
+                        {/* Asientos comprados */}
+                        {ticketSeats.length > 0 && (
+                          <div className="text-center mb-4" style={{ marginTop: '-7px' }}>
+                            <p className="text-sm text-gray-600 mb-3">Asientos:</p>
+                            <div className="flex flex-wrap justify-center gap-2">
+                              {ticketSeats.map((s, index) => (
+                                <div
+                                  key={`${s.row}${s.number}-${index}`}
+                                  className="metallic-border-gold font-bold text-lg px-4 py-2 min-w-[60px] text-center"
+                                  style={{ 
+                                    borderRadius: '0',
+                                    background: 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+                                    color: '#ffd700',
+                                    textShadow: '0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)',
+                                    boxShadow: '0 0 15px rgba(147, 51, 234, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.2)'
+                                  }}
+                                >
+                                  {s.row}{s.number}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Estado del ticket con efecto metálico */}
+                        <div 
+                          className="metallic-border-gold rounded-lg p-4" 
+                          style={{ 
+                            marginTop: '8px',
+                            background: ticketStatus === 'approved' 
+                              ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.4) 100%)'
+                              : ticketStatus === 'used'
+                              ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.4) 100%)'
+                              : 'linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%)',
+                            boxShadow: '0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.1)'
+                          }}
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <CheckCircle 
+                              className="w-6 h-6" 
+                              style={{ 
+                                color: ticketStatus === 'approved' ? '#22c55e' : ticketStatus === 'used' ? '#f97316' : '#eab308',
+                                filter: 'drop-shadow(0 0 8px currentColor)'
+                              }} 
+                            />
+                            <span 
+                              className="metallic-gold-text text-lg font-bold"
+                              style={{
+                                color: ticketStatus === 'approved' ? '#22c55e' : ticketStatus === 'used' ? '#f97316' : '#eab308',
+                                filter: 'drop-shadow(0 0 6px currentColor)'
+                              }}
+                            >
+                              {ticketStatus === 'pending' ? 'PENDIENTE' : 
+                               ticketStatus === 'used' ? 'REDIMIDO' : 
+                               ticketStatus === 'approved' ? 'VERIFICADO' : 'VERIFICADO'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Franja negra abajo */}
+                      <div className="w-full bg-black flex-shrink-0" style={{ height: '25px', marginTop: 'auto' }} />
+                    </div>
+                  </motion.div>
               </motion.div>
+              </div>
             </div>
           </>
         )}

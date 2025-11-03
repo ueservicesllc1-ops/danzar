@@ -145,6 +145,8 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
               if (actions.order) {
                 try {
                   const details = await actions.order.capture();
+                  console.log('PayPal capture details:', JSON.stringify(details, null, 2));
+                  
                   // Convertir detalles de PayPal a PaymentDetails
                   const paymentDetails: PaymentDetails = {
                     id: (details as { id?: string }).id || `paypal-${Date.now()}`,
@@ -161,7 +163,16 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
                   }
                   if ((details as { purchase_units?: unknown }).purchase_units) {
                     (paymentDetails as Record<string, unknown>).purchase_units = (details as { purchase_units: unknown }).purchase_units;
+                    // Extraer soft_descriptor si existe
+                    const purchaseUnits = (details as { purchase_units?: Array<{ soft_descriptor?: string, payments?: { captures?: Array<{ soft_descriptor?: string }> } }> }).purchase_units;
+                    if (purchaseUnits && purchaseUnits.length > 0) {
+                      const softDescriptor = purchaseUnits[0].soft_descriptor || purchaseUnits[0].payments?.captures?.[0]?.soft_descriptor;
+                      if (softDescriptor) {
+                        (paymentDetails as Record<string, unknown>).soft_descriptor = softDescriptor;
+                      }
+                    }
                   }
+                  console.log('PaymentDetails preparado:', paymentDetails);
                   onSuccess(paymentDetails);
                 } catch (error) {
                   console.error('Error capturando orden de PayPal:', error);
