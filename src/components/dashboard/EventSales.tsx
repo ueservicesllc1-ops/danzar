@@ -27,6 +27,12 @@ interface Sale {
   qrCode?: string;
   status?: string;
   used?: boolean;
+  redeemedCount?: number;
+  totalSeats?: number;
+  seats?: Array<{
+    row: string;
+    number: string;
+  }>;
   [key: string]: unknown;
 }
 
@@ -237,18 +243,44 @@ export default function EventSales() {
                       }}>
                         {sale.status === 'approved' ? 'Confirmado' : 'Pendiente'}
                       </span>
-                      {sale.used && (
-                        <span style={{
-                          backgroundColor: '#fef3c7',
-                          color: '#d97706',
-                          padding: '2px 6px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: '600'
-                        }}>
-                          REDIMIDO
-                        </span>
-                      )}
+                      {(() => {
+                        const totalSeats = sale.seats?.length || sale.totalSeats || 0;
+                        const redeemedCount = sale.redeemedCount || 0;
+                        const isFullyRedeemed = sale.used || (totalSeats > 0 && redeemedCount >= totalSeats);
+                        
+                        if (isFullyRedeemed) {
+                          return (
+                            <span style={{
+                              backgroundColor: '#fef3c7',
+                              color: '#d97706',
+                              padding: '2px 6px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}>
+                              REDIMIDO
+                            </span>
+                          );
+                        }
+                        
+                        if (redeemedCount > 0 && redeemedCount < totalSeats) {
+                          const remaining = totalSeats - redeemedCount;
+                          return (
+                            <span style={{
+                              backgroundColor: '#dbeafe',
+                              color: '#1e40af',
+                              padding: '2px 6px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}>
+                              Redimidas {redeemedCount} / Por redimir {remaining}
+                            </span>
+                          );
+                        }
+                        
+                        return null;
+                      })()}
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
                       {sale.customer?.email || 'N/A'}

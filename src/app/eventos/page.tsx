@@ -328,6 +328,8 @@ export default function EventosPage() {
           image: mockEvent.image
         },
         seats: selectedSeats.map(s => ({ id: s.id, row: s.row, number: s.number })),
+        totalSeats: selectedSeats.length,
+        redeemedCount: 0,
         // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
         totalAmount: (() => {
           const count = selectedSeats.length;

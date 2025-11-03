@@ -29,6 +29,8 @@ interface TicketResult {
     totalAmount?: number;
     status?: string;
     used?: boolean;
+    redeemedCount?: number;
+    totalSeats?: number;
     [key: string]: unknown;
   };
   isValid: boolean;
@@ -46,6 +48,8 @@ export default function MobileScanPage() {
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [codeReader, setCodeReader] = useState<BrowserQRCodeReader | null>(null);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [redeemQuantity, setRedeemQuantity] = useState(1);
 
   // Detectar si es móvil
   useEffect(() => {
@@ -202,39 +206,87 @@ export default function MobileScanPage() {
   const handleValidateEntry = async () => {
     if (!result) return;
     
+    const totalSeats = result.ticket.seats?.length || 0;
+    const currentRedeemed = result.ticket.redeemedCount || 0;
+    const remaining = totalSeats - currentRedeemed;
+    
+    if (remaining === 0) {
+      alert('Este ticket ya fue completamente redimido');
+      return;
+    }
+    
+    // Si hay más de 1 entrada disponible, mostrar modal para seleccionar cantidad
+    if (remaining > 1) {
+      setRedeemQuantity(1);
+      setShowRedeemModal(true);
+      return;
+    }
+    
+    // Si solo queda 1, redimir directamente
+    redeemTickets(1);
+  };
+
+  const redeemTickets = async (quantity: number) => {
+    if (!result) return;
+    
+    const totalSeats = result.ticket.seats?.length || 0;
+    const currentRedeemed = result.ticket.redeemedCount || 0;
+    const remaining = totalSeats - currentRedeemed;
+    
+    if (quantity > remaining) {
+      alert(`Solo puedes redimir ${remaining} entrada(s) restante(s)`);
+      return;
+    }
+    
     setLoading(true);
+    setShowRedeemModal(false);
+    
     try {
+      const newRedeemedCount = currentRedeemed + quantity;
+      const isFullyRedeemed = newRedeemedCount >= totalSeats;
+      
       await updateDoc(doc(db, 'tickets', result.docId), {
-        used: true,
-        usedAt: new Date()
+        redeemedCount: newRedeemedCount,
+        used: isFullyRedeemed,
+        usedAt: isFullyRedeemed ? new Date() : undefined,
+        lastRedeemedAt: new Date()
       });
       
       setResult({
         ...result,
         ticket: {
           ...result.ticket,
-          used: true
+          redeemedCount: newRedeemedCount,
+          used: isFullyRedeemed,
+          totalSeats: totalSeats
         }
       });
       
-      // Actualizar el estado en el modal también
-      alert('Entrada redimida exitosamente');
+      if (isFullyRedeemed) {
+        alert(`¡Ticket completamente redimido! Se redimieron ${quantity} entrada(s).`);
+      } else {
+        alert(`Se redimieron ${quantity} entrada(s). Quedan ${totalSeats - newRedeemedCount} por redimir.`);
+      }
     } catch (err) {
-      console.error('Error validando entrada:', err);
+      console.error('Error redimiendo entradas:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Detalles del error:', {
         message: errorMessage,
         code: (err as { code?: string })?.code,
         error: err
       });
-      alert(`Error al validar la entrada: ${errorMessage}`);
+      alert(`Error al redimir las entradas: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
   const getStatusDisplay = () => {
-    if (result?.ticket.used) {
+    const totalSeats = result?.ticket.seats?.length || result?.ticket.totalSeats || 0;
+    const redeemedCount = result?.ticket.redeemedCount || 0;
+    const isFullyRedeemed = result?.ticket.used || (totalSeats > 0 && redeemedCount >= totalSeats);
+    
+    if (isFullyRedeemed) {
       return {
         text: 'REDIMIDO',
         color: 'bg-orange-500',
@@ -257,8 +309,23 @@ export default function MobileScanPage() {
     };
   };
 
+  const getRedeemStatus = () => {
+    const totalSeats = result?.ticket.seats?.length || result?.ticket.totalSeats || 0;
+    const redeemedCount = result?.ticket.redeemedCount || 0;
+    const remaining = totalSeats - redeemedCount;
+    
+    if (totalSeats === 0) return null;
+    
+    return {
+      total: totalSeats,
+      redeemed: redeemedCount,
+      remaining: remaining,
+      isFullyRedeemed: redeemedCount >= totalSeats
+    };
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 p-4" style={{ marginTop: '-3rem', paddingTop: '1rem' }}>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 p-4 flex flex-col" style={{ marginTop: '-3rem', paddingTop: '1rem' }}>
       {/* Header */}
       {!showScanning && !showCodeInput && !result && (
         <div className="mb-8">
@@ -278,9 +345,10 @@ export default function MobileScanPage() {
         </div>
       )}
 
-      {/* Botones principales */}
+      {/* Botones principales - Centrados en media pantalla */}
       {!showScanning && !showCodeInput && !result && (
-        <div className="space-y-4 max-w-md mx-auto">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="space-y-4 max-w-md w-full">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -300,6 +368,7 @@ export default function MobileScanPage() {
             <Hash className="w-8 h-8" />
             Ingresar Código
           </motion.button>
+          </div>
         </div>
       )}
 
@@ -330,12 +399,13 @@ export default function MobileScanPage() {
 
       {/* Vista de ingreso de código */}
       {showCodeInput && !result && (
-        <div className="max-w-md mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 shadow-lg"
-          >
+        <div className="flex-1 flex items-center justify-center" style={{ marginTop: '60px' }}>
+          <div className="max-w-md w-full relative z-50">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl p-6 shadow-lg"
+            >
             <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
               Ingresar Código
             </h2>
@@ -376,7 +446,8 @@ export default function MobileScanPage() {
                 </button>
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       )}
 
@@ -404,16 +475,24 @@ export default function MobileScanPage() {
               <div className="text-4xl font-bold mb-2">
                 {getStatusDisplay().text}
               </div>
-              {result.ticket.status !== 'approved' && !result.ticket.used && (
-                <p className="text-sm opacity-90">
-                  El ticket aún no ha sido verificado
-                </p>
-              )}
-              {result.ticket.used && (
-                <p className="text-sm opacity-90">
-                  Esta entrada ya fue utilizada
-                </p>
-              )}
+              {(() => {
+                const redeemStatus = getRedeemStatus();
+                if (result.ticket.status !== 'approved' && !redeemStatus?.isFullyRedeemed) {
+                  return (
+                    <p className="text-sm opacity-90">
+                      El ticket aún no ha sido verificado
+                    </p>
+                  );
+                }
+                if (redeemStatus?.isFullyRedeemed) {
+                  return (
+                    <p className="text-sm opacity-90">
+                      Esta entrada ya fue completamente utilizada
+                    </p>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {/* Detalles del ticket */}
@@ -485,14 +564,37 @@ export default function MobileScanPage() {
                 </div>
               </div>
 
+              {/* Estado de redención */}
+              {(() => {
+                const redeemStatus = getRedeemStatus();
+                if (!redeemStatus) return null;
+                
+                return (
+                  <div className={`p-4 rounded-xl mb-4 ${
+                    redeemStatus.isFullyRedeemed 
+                      ? 'bg-orange-50 border-2 border-orange-200' 
+                      : 'bg-blue-50 border-2 border-blue-200'
+                  }`}>
+                    <div className="text-center">
+                      <div className="text-lg font-bold mb-2">
+                        {redeemStatus.isFullyRedeemed 
+                          ? `✅ Completamente Redimido (${redeemStatus.redeemed}/${redeemStatus.total})`
+                          : `Redimidas: ${redeemStatus.redeemed} / Por redimir: ${redeemStatus.remaining}`
+                        }
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Botón para redimir */}
-              {result.ticket.status === 'approved' && !result.ticket.used && (
+              {result.ticket.status === 'approved' && !getRedeemStatus()?.isFullyRedeemed && (
                 <button
                   onClick={handleValidateEntry}
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
-                  {loading ? 'Redimiendo...' : 'Redimir Entrada'}
+                  {loading ? 'Redimiendo...' : getRedeemStatus()?.remaining === 1 ? 'Redimir Entrada' : 'Redimir Entradas'}
                 </button>
               )}
 
@@ -518,6 +620,105 @@ export default function MobileScanPage() {
                 </button>
               </div>
             </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Modal para seleccionar cantidad a redimir */}
+      {showRedeemModal && result && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowRedeemModal(false);
+            }
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              Redimir Entradas
+            </h3>
+            
+            {(() => {
+              const totalSeats = result.ticket.seats?.length || 0;
+              const currentRedeemed = result.ticket.redeemedCount || 0;
+              const remaining = totalSeats - currentRedeemed;
+              
+              return (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 p-4 rounded-xl text-center">
+                    <p className="text-sm text-gray-600 mb-1">Total de entradas: {totalSeats}</p>
+                    <p className="text-sm text-gray-600 mb-1">Ya redimidas: {currentRedeemed}</p>
+                    <p className="text-lg font-bold text-blue-600">Por redimir: {remaining}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Cantidad a redimir:
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setRedeemQuantity(Math.max(1, redeemQuantity - 1))}
+                        className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold text-xl"
+                        disabled={redeemQuantity <= 1}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        max={remaining}
+                        value={redeemQuantity}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1;
+                          setRedeemQuantity(Math.max(1, Math.min(remaining, val)));
+                        }}
+                        className="flex-1 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg py-2"
+                      />
+                      <button
+                        onClick={() => setRedeemQuantity(Math.min(remaining, redeemQuantity + 1))}
+                        className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-lg font-bold text-xl"
+                        disabled={redeemQuantity >= remaining}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        onClick={() => setRedeemQuantity(remaining)}
+                        className="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 py-2 rounded-lg font-semibold text-sm"
+                      >
+                        Redimir Todas ({remaining})
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowRedeemModal(false)}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => redeemTickets(redeemQuantity)}
+                      disabled={loading || redeemQuantity < 1 || redeemQuantity > remaining}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Redimiendo...' : `Redimir ${redeemQuantity}`}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </motion.div>
         </motion.div>
       )}
