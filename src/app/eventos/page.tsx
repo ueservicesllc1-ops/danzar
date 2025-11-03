@@ -49,8 +49,8 @@ const generateSeats = (): Seat[] => {
     for (let num = 1; num <= totalSeatsPerRow; num++) {
       let status: SeatStatus = 'available';
       
-      // Solo la fila A está ocupada (gris)
-      if (row === 'A') {
+      // Filas A y B están bloqueadas (grises)
+      if (row === 'A' || row === 'B') {
         status = 'occupied';
       }
 
@@ -87,6 +87,7 @@ export default function EventosPage() {
   const [ticketSeats, setTicketSeats] = useState<Array<{row: string, number: number}>>([]);
   const [isFlipped, setIsFlipped] = useState(false); // false = muestra reverso (dorado con logo), true = muestra ticket (rota 180deg)
   const cardRef = useRef<HTMLDivElement>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Efecto de movimiento 3D con cursor/dedo
   const handleCardMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
@@ -276,13 +277,13 @@ export default function EventosPage() {
       ));
     } else {
       // Seleccionar
-      if (selectedSeats.length < 10) { // Máximo 10 asientos
+      if (selectedSeats.length < 5) { // Máximo 5 entradas por usuario
         setSelectedSeats([...selectedSeats, seat]);
         setSeats(seats.map(s => 
           s.id === seat.id ? { ...s, status: 'selected' } : s
         ));
       } else {
-        alert('Máximo 10 asientos por compra');
+        setShowLimitModal(true);
       }
     }
   };
@@ -327,7 +328,16 @@ export default function EventosPage() {
           image: mockEvent.image
         },
         seats: selectedSeats.map(s => ({ id: s.id, row: s.row, number: s.number })),
-        totalAmount: selectedSeats.length === 3 ? 30 : selectedSeats.length === 5 ? 45 : selectedSeats.reduce((sum, s) => sum + s.price, 0),
+        // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
+        totalAmount: (() => {
+          const count = selectedSeats.length;
+          if (count === 3 || count === 4) {
+            return count * 10; // $10 cada una
+          } else if (count >= 5) {
+            return count * 9; // $9 cada una
+          }
+          return selectedSeats.reduce((sum, s) => sum + s.price, 0);
+        })(),
         // Detectar si es PayPal o Pago Móvil
         // PayPal tiene paypalOrderId, paypalStatus, o soft_descriptor con "PAYPAL"
         // Pago Móvil tiene screenshot o fileName
@@ -374,9 +384,15 @@ export default function EventosPage() {
       await addDoc(collection(db, 'tickets'), ticketData);
       
       // Generar URL del ticket
-      const ticketUrl = typeof window !== 'undefined' 
-        ? `${window.location.origin}/ticket/${code}`
-        : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/ticket/${code}`;
+      // Priorizar NEXT_PUBLIC_APP_URL si está configurado y no es localhost
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL && 
+                      !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') 
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : typeof window !== 'undefined' 
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || '';
+      
+      const ticketUrl = `${baseUrl}/ticket/${code}`;
       
       // Enviar email de confirmación usando EmailJS desde el cliente
       try {
@@ -450,16 +466,30 @@ export default function EventosPage() {
     setSendingTestEmail(true);
     try {
       const testCode = `TKT-TEST-${Date.now().toString(36).toUpperCase()}`;
-      const testTicketUrl = typeof window !== 'undefined' 
-        ? `${window.location.origin}/ticket/${testCode}`
-        : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/ticket/${testCode}`;
+      // Priorizar NEXT_PUBLIC_APP_URL si está configurado y no es localhost
+      const testBaseUrl = process.env.NEXT_PUBLIC_APP_URL && 
+                          !process.env.NEXT_PUBLIC_APP_URL.includes('localhost') 
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : typeof window !== 'undefined' 
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || '';
+      
+      const testTicketUrl = `${testBaseUrl}/ticket/${testCode}`;
 
       // Formatear asientos para el email
       const testSeats = selectedSeats.length > 0 
         ? selectedSeats.map(s => `Fila ${s.row} - Asiento ${s.number}`).join(', ')
         : 'Fila B - Asiento 10';
       const testTotal = selectedSeats.length > 0 
-        ? selectedSeats.reduce((sum, s) => sum + s.price, 0)
+        ? (() => {
+            const count = selectedSeats.length;
+            if (count === 3 || count === 4) {
+              return count * 10;
+            } else if (count >= 5) {
+              return count * 9;
+            }
+            return selectedSeats.reduce((sum, s) => sum + s.price, 0);
+          })()
         : 12;
 
       // Inicializar EmailJS con la public key
@@ -882,6 +912,50 @@ export default function EventosPage() {
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     {sendingTestEmail ? 'Enviando...' : 'Enviar Email'}
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Límite de 5 Entradas */}
+      <AnimatePresence>
+        {showLimitModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLimitModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999]"
+            />
+            <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none z-[10000]">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-white rounded-xl shadow-2xl pointer-events-auto w-full max-w-md"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6 text-center">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+                      <X className="w-8 h-8 text-orange-600" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    Límite de Entradas
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Máximo 5 entradas por usuario. Por favor, deselecciona una entrada para agregar otra.
+                  </p>
+                  <Button
+                    onClick={() => setShowLimitModal(false)}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    Entendido
                   </Button>
                 </div>
               </motion.div>

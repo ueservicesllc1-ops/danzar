@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Configurar cliente S3 para Backblaze B2
 const s3Client = new S3Client({
@@ -65,23 +64,13 @@ export async function POST(request: NextRequest) {
 
     await s3Client.send(uploadCommand);
 
-    // Generar URL pública
-    const publicUrl = `https://f005.backblazeb2.com/file/${BUCKET_NAME}/${fileName}`;
-
-    // Generar URL firmada (válida por 7 días)
-    const signedUrlCommand = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: fileName,
-    });
-
-    const signedUrl = await getSignedUrl(s3Client, signedUrlCommand, {
-      expiresIn: 604800, // 7 días
-    });
+    // Generar URL pública usando el endpoint correcto
+    const publicEndpoint = process.env.BACKBLAZE_ENDPOINT || 'https://s3.us-east-005.backblazeb2.com';
+    const publicUrl = `${publicEndpoint}/${BUCKET_NAME}/${fileName}`;
 
     return NextResponse.json({
       success: true,
       url: publicUrl,
-      signedUrl: signedUrl,
       fileName: fileName,
     });
 

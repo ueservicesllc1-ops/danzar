@@ -14,14 +14,14 @@ interface PayPalCheckoutProps {
 export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalCheckoutProps) {
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Calcular precio con descuentos por paquetes
+  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
   const numTickets = seats.length;
   let totalPrice = basePrice;
   
-  if (numTickets === 3) {
-    totalPrice = 30;
-  } else if (numTickets === 5) {
-    totalPrice = 45;
+  if (numTickets === 3 || numTickets === 4) {
+    totalPrice = numTickets * 10; // $10 cada una
+  } else if (numTickets >= 5) {
+    totalPrice = numTickets * 9; // $9 cada una
   }
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
@@ -100,8 +100,12 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
               height: 55,
             }}
             createOrder={(data, actions) => {
-              // Calcular item_total basado en totalPrice
-              const itemTotal = numTickets === 3 ? 30 : numTickets === 5 ? 45 : basePrice;
+              // Calcular item_total basado en nueva lógica de precios
+              const itemTotal = (numTickets === 3 || numTickets === 4) 
+                ? numTickets * 10 
+                : (numTickets >= 5) 
+                  ? numTickets * 9 
+                  : basePrice;
               
               // Si hay descuento, ajustar el precio por asiento
               const adjustedSeatPrice = itemTotal / numTickets;

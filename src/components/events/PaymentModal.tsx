@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, QrCode } from 'lucide-react';
 import { Seat, Event, PaymentDetails } from '@/types/events';
 import PayPalCheckout from './PayPalCheckout';
-import { uploadImage } from '@/lib/backblaze';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -40,14 +39,14 @@ export default function PaymentModal({
   };
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Calcular precio con descuentos por paquetes
+  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
   const numTickets = seats.length;
   let totalPrice = basePrice;
   
-  if (numTickets === 3) {
-    totalPrice = 30;
-  } else if (numTickets === 5) {
-    totalPrice = 45;
+  if (numTickets === 3 || numTickets === 4) {
+    totalPrice = numTickets * 10; // $10 cada una
+  } else if (numTickets >= 5) {
+    totalPrice = numTickets * 9; // $9 cada una
   }
 
   return (
@@ -283,26 +282,41 @@ export default function PaymentModal({
                   onClick={async () => {
                     if (lastDigits && screenshotFile) {
                       try {
-                        // Generar nombre único para el archivo
-                        const timestamp = Date.now();
-                        const extension = screenshotFile.name.split('.').pop();
-                        const fileName = `payment-${timestamp}-${Math.random().toString(36).substring(2, 15)}.${extension}`;
+                        // Crear FormData para enviar al API route
+                        const formData = new FormData();
+                        formData.append('file', screenshotFile);
                         
-                        // Subir imagen a B2 en la carpeta receipts
-                        const imageUrl = await uploadImage(screenshotFile, fileName, 'receipts');
+                        // Subir imagen usando API route (proxy server)
+                        const response = await fetch('/api/upload-receipt', {
+                          method: 'POST',
+                          body: formData,
+                        });
+                        
+                        if (!response.ok) {
+                          const errorData = await response.json();
+                          throw new Error(errorData.error || 'Error al subir el archivo');
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (!data.success || !data.url) {
+                          throw new Error('Error al obtener la URL del archivo subido');
+                        }
+                        
+                        const timestamp = Date.now();
                         
                         alert('Comprobante enviado exitosamente');
                         onPaymentSuccess({ 
                           id: 'movil-' + timestamp,
                           lastDigits,
-                          screenshot: imageUrl,
-                          fileName: fileName
+                          screenshot: data.url,
+                          fileName: data.fileName || `receipts/${timestamp}-${Math.random().toString(36).substring(2, 15)}.${screenshotFile.name.split('.').pop()}`
                         });
                         setShowMobilePayment(false);
                         onClose();
                       } catch (error) {
                         console.error('Error subiendo imagen:', error);
-                        alert('Error al subir el comprobante. Por favor, intenta de nuevo.');
+                        alert(`Error al subir el comprobante: ${error instanceof Error ? error.message : 'Error desconocido'}. Por favor, intenta de nuevo.`);
                       }
                     } else {
                       alert('Por favor completa todos los campos');

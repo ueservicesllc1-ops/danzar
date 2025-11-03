@@ -44,8 +44,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: userData.name || firebaseUser.displayName || '',
             avatar: userData.avatar || firebaseUser.photoURL || '',
             role: userData.role || 'student',
-            createdAt: userData.createdAt ? (typeof userData.createdAt === 'string' ? new Date(userData.createdAt) : userData.createdAt.toDate()) : new Date(),
-            updatedAt: userData.updatedAt ? (typeof userData.updatedAt === 'string' ? new Date(userData.updatedAt) : userData.updatedAt.toDate()) : new Date(),
+            createdAt: userData.createdAt ? (
+              typeof userData.createdAt === 'string' ? new Date(userData.createdAt) :
+              typeof userData.createdAt === 'object' && userData.createdAt !== null && 'toDate' in userData.createdAt && typeof userData.createdAt.toDate === 'function' ? userData.createdAt.toDate() :
+              userData.createdAt instanceof Date ? userData.createdAt : new Date()
+            ) : new Date(),
+            updatedAt: userData.updatedAt ? (
+              typeof userData.updatedAt === 'string' ? new Date(userData.updatedAt) :
+              typeof userData.updatedAt === 'object' && userData.updatedAt !== null && 'toDate' in userData.updatedAt && typeof userData.updatedAt.toDate === 'function' ? userData.updatedAt.toDate() :
+              userData.updatedAt instanceof Date ? userData.updatedAt : new Date()
+            ) : new Date(),
           });
         } else {
           // Si no existe el documento, crear uno por defecto

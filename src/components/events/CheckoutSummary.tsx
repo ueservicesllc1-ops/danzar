@@ -22,20 +22,24 @@ export default function CheckoutSummary({
 }: CheckoutSummaryProps) {
   const basePrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Calcular precio con descuentos por paquetes
+  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
   const numTickets = selectedSeats.length;
   let totalPrice = basePrice;
   let discount = 0;
   let packageType = null;
 
   if (numTickets === 3) {
-    totalPrice = 30;
+    totalPrice = 30; // 3 * $10
     discount = basePrice - 30;
-    packageType = 'Paquete 3x30';
-  } else if (numTickets === 5) {
-    totalPrice = 45;
-    discount = basePrice - 45;
-    packageType = 'Paquete 5x45';
+    packageType = '3 entradas - $10 c/u';
+  } else if (numTickets === 4) {
+    totalPrice = 40; // 4 * $10
+    discount = basePrice - 40;
+    packageType = '4 entradas - $10 c/u';
+  } else if (numTickets >= 5) {
+    totalPrice = numTickets * 9; // $9 cada una
+    discount = basePrice - totalPrice;
+    packageType = `${numTickets} entradas - $9 c/u`;
   }
 
   if (selectedSeats.length === 0) {
@@ -78,9 +82,21 @@ export default function CheckoutSummary({
 
       {/* Selected Seats */}
       <div className="mb-6">
-        <h4 className="font-semibold text-gray-900 mb-3">
-          Asientos Seleccionados ({selectedSeats.length})
-        </h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-semibold text-gray-900">
+            Asientos Seleccionados ({selectedSeats.length})
+          </h4>
+          {selectedSeats.length >= 5 && (
+            <span className="text-xs text-orange-600 font-semibold">
+              ⚠️ Límite alcanzado (5 máximo)
+            </span>
+          )}
+          {selectedSeats.length === 4 && (
+            <span className="text-xs text-yellow-600 font-semibold">
+              ⚠️ Puedes agregar 1 más
+            </span>
+          )}
+        </div>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {selectedSeats.map((seat) => (
             <motion.div

@@ -92,14 +92,14 @@ export default function TicketModal({
 
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Calcular precio con descuentos por paquetes
+  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
   const numTickets = seats.length;
   let totalPrice = basePrice;
   
-  if (numTickets === 3) {
-    totalPrice = 30;
-  } else if (numTickets === 5) {
-    totalPrice = 45;
+  if (numTickets === 3 || numTickets === 4) {
+    totalPrice = numTickets * 10; // $10 cada una
+  } else if (numTickets >= 5) {
+    totalPrice = numTickets * 9; // $9 cada una
   }
 
   return (

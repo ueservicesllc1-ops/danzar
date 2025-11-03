@@ -6,9 +6,10 @@ const STATIC_CACHE_NAME = 'danzar-static-v2';
 if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
   // Auto-desregistrarse en desarrollo
   self.registration?.unregister().catch(() => {});
-  // NO hacer nada más en desarrollo
-  self.addEventListener('fetch', () => {
-    // NO interceptar nada en desarrollo
+  // NO interceptar NADA en desarrollo - dejar pasar todas las peticiones
+  self.addEventListener('fetch', (event) => {
+    // NO interceptar nada en desarrollo - dejar que el navegador maneje todo
+    event.respondWith(fetch(event.request));
     return;
   });
 } else {

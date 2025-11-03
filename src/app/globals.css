@@ -1,5 +1,136 @@
 @import "tailwindcss";
 
+/* Efectos Metalizados tipo Yu-Gi-Oh para Tickets - Carta 3D */
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(255, 215, 0, 0.3),
+      0 0 40px rgba(255, 215, 0, 0.2),
+      0 0 60px rgba(255, 215, 0, 0.1),
+      inset 0 0 60px rgba(255, 215, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(255, 215, 0, 0.5),
+      0 0 60px rgba(255, 215, 0, 0.3),
+      0 0 90px rgba(255, 215, 0, 0.2),
+      inset 0 0 90px rgba(255, 215, 0, 0.2);
+  }
+}
+
+.metallic-card-3d {
+  perspective: 1500px;
+  perspective-origin: center center;
+  cursor: pointer;
+}
+
+.metallic-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transform: rotateY(0deg);
+  transition: transform 0.9s cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: transform;
+}
+
+.metallic-card-inner.flipped {
+  transform: rotateY(180deg) !important;
+}
+
+.metallic-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+/* 💎 Efecto metálico dorado holográfico */
+.metallic-front {
+  background: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #ffd700 25%,
+    #fff5a5 50%,
+    #ffdf00 75%,
+    #d4af37 100%
+  );
+  background-size: 400% 400%;
+  animation: shimmer 4s linear infinite;
+  transform: rotateY(0deg);
+}
+
+.metallic-back {
+  background: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #ffd700 25%,
+    #fff5a5 50%,
+    #ffdf00 75%,
+    #d4af37 100%
+  );
+  background-size: 400% 400%;
+  animation: shimmer 4s linear infinite;
+  transform: rotateY(0deg);
+}
+
+/* 💡 efecto reflejo según cursor */
+.metallic-card-3d:hover .metallic-card-face {
+  filter: brightness(1.2) contrast(1.1);
+}
+
+.metallic-gold-text {
+  background: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #ffd700 20%,
+    #fff5a5 40%,
+    #ffd700 60%,
+    #d4af37 80%,
+    #ffd700 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  font-weight: 900;
+  letter-spacing: 2px;
+  animation: shimmer 4s linear infinite;
+}
+
+.metallic-border-gold {
+  border: 3px solid;
+  border-image: linear-gradient(
+    135deg,
+    #d4af37,
+    #ffd700,
+    #fff5a5,
+    #ffd700,
+    #d4af37
+  ) 1;
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.5),
+    inset 0 0 20px rgba(255, 215, 0, 0.2),
+    0 0 40px rgba(255, 215, 0, 0.3);
+}
+
 :root {
   /* Colores principales - Nueva paleta DanZar */
   --background: #ffffff;
@@ -170,6 +301,17 @@ h1, h2, h3, h4, h5, h6 {
 .form-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 172, 70, 0.1);
+}
+
+/* QR Code transparente */
+.qr-code-transparent svg {
+  background-color: transparent !important;
+}
+
+.qr-code-transparent svg rect[fill="white"],
+.qr-code-transparent svg rect[fill="#ffffff"],
+.qr-code-transparent svg rect[fill="#FFFFFF"] {
+  fill: transparent !important;
 }
 
 @layer base {
