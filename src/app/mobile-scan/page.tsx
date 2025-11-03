@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { QrCode, Keypad, ArrowLeft } from 'lucide-react';
+import { QrCode, Hash, ArrowLeft } from 'lucide-react';
 import { BrowserQRCodeReader } from '@zxing/library';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -291,7 +291,7 @@ export default function MobileScanPage() {
             onClick={() => setShowCodeInput(true)}
             className="w-full bg-white text-purple-600 border-2 border-purple-600 py-6 rounded-2xl shadow-lg flex items-center justify-center gap-4 font-semibold text-lg hover:bg-purple-50 transition-colors"
           >
-            <Keypad className="w-8 h-8" />
+            <Hash className="w-8 h-8" />
             Ingresar Código
           </motion.button>
         </div>
