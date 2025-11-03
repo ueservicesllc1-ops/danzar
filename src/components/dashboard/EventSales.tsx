@@ -29,10 +29,6 @@ interface Sale {
   used?: boolean;
   redeemedCount?: number;
   totalSeats?: number;
-  seats?: Array<{
-    row: string;
-    number: string;
-  }>;
   [key: string]: unknown;
 }
 
