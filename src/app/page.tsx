@@ -119,9 +119,10 @@ export default function HomePage() {
                   <X className="w-5 h-5" />
                 </button>
                 
-                {/* Imagen Flyer */}
-                <div className="relative flex-1 flex flex-col overflow-hidden rounded-lg shadow-2xl bg-white min-h-0">
-                  <div className="flex-1 overflow-auto">
+                {/* Contenedor principal del popup */}
+                <div className="relative flex-1 flex flex-col bg-white rounded-lg shadow-2xl overflow-hidden min-h-0">
+                  {/* Imagen Flyer */}
+                  <div className="flex-1 overflow-auto relative">
                     <img
                       src="/images/flyer.jpg"
                       alt="Flyer DanZar"
@@ -129,14 +130,14 @@ export default function HomePage() {
                     />
                   </div>
                   
-                  {/* Botón "Compra tu Entrada Aquí" - Siempre visible y fijo */}
-                  <div className="absolute bottom-0 left-0 right-0 z-[60] pb-2 sm:pb-4 px-4 sm:px-0">
+                  {/* Botón "Compra tu Entrada Aquí" - Fuera de la imagen, siempre visible */}
+                  <div className="relative z-[100] bg-white/95 backdrop-blur-sm border-t border-gray-200 py-3 sm:py-4 px-4 sm:px-6">
                     <div className="flex justify-center w-full">
                       <Link href="/eventos" onClick={handleAcquireTicket} className="block w-full sm:w-auto">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-xl transition-all duration-300"
+                          className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-xl transition-all duration-300 whitespace-nowrap"
                           style={{
                             boxShadow: '0 10px 25px rgba(147, 51, 234, 0.5)'
                           }}
