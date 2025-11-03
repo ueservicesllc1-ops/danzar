@@ -121,17 +121,8 @@ export default function HomePage() {
                 
                 {/* Contenedor principal del popup */}
                 <div className="relative flex-1 flex flex-col bg-white rounded-lg shadow-2xl overflow-hidden min-h-0">
-                  {/* Imagen Flyer */}
-                  <div className="flex-1 overflow-auto relative">
-                    <img
-                      src="/images/flyer.jpg"
-                      alt="Flyer DanZar"
-                      className="w-full h-full object-contain sm:object-cover"
-                    />
-                  </div>
-                  
-                  {/* Botón "Compra tu Entrada Aquí" - Fuera de la imagen, siempre visible */}
-                  <div className="relative z-[100] bg-white/95 backdrop-blur-sm border-t border-gray-200 py-3 sm:py-4 px-4 sm:px-6">
+                  {/* Botón "Compra tu Entrada Aquí" - Arriba, siempre visible */}
+                  <div className="relative z-[100] bg-white/95 backdrop-blur-sm border-b border-gray-200 py-3 sm:py-4 px-4 sm:px-6">
                     <div className="flex justify-center w-full">
                       <Link href="/eventos" onClick={handleAcquireTicket} className="block w-full sm:w-auto">
                         <motion.button
@@ -146,6 +137,15 @@ export default function HomePage() {
                         </motion.button>
                       </Link>
                     </div>
+                  </div>
+                  
+                  {/* Imagen Flyer */}
+                  <div className="flex-1 overflow-auto relative">
+                    <img
+                      src="/images/flyer.jpg"
+                      alt="Flyer DanZar"
+                      className="w-full h-full object-contain sm:object-cover"
+                    />
                   </div>
                 </div>
               </motion.div>
