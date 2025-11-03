@@ -130,14 +130,30 @@ export default function HomePage() {
                     />
                   </div>
                   
-                  {/* Botón "Compra tu Entrada Aquí" - Sobre el banner, centrado */}
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] px-4 sm:px-6 w-full max-w-xs sm:max-w-md">
+                  {/* Botón "Compra tu Entrada Aquí" - Versión Desktop (abajo) */}
+                  <div className="hidden sm:block absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[100]">
+                    <Link href="/eventos" onClick={handleAcquireTicket}>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-xl transition-all duration-300"
+                        style={{
+                          boxShadow: '0 10px 25px rgba(147, 51, 234, 0.5)'
+                        }}
+                      >
+                        Compra tu Entrada Aquí
+                      </motion.button>
+                    </Link>
+                  </div>
+                  
+                  {/* Botón "Compra tu Entrada Aquí" - Versión Móvil (sobre el banner, centrado) */}
+                  <div className="sm:hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] px-4 w-full max-w-xs">
                     <div className="flex justify-center w-full">
-                      <Link href="/eventos" onClick={handleAcquireTicket} className="block w-full sm:w-auto">
+                      <Link href="/eventos" onClick={handleAcquireTicket} className="block w-full">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg shadow-xl transition-all duration-300 whitespace-nowrap"
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg text-base shadow-xl transition-all duration-300"
                           style={{
                             boxShadow: '0 10px 25px rgba(147, 51, 234, 0.5)'
                           }}
