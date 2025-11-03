@@ -267,9 +267,9 @@ export default function TicketPage() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden">
+    <div className="fixed inset-0 w-full h-full overflow-hidden sm:relative">
       {/* Main Content - Ticket Metálico 3D */}
-      <div className="w-full h-full flex items-center justify-center bg-gray-100 p-0 sm:p-4 overflow-hidden">
+      <div className="w-full h-screen sm:h-full flex items-center justify-center bg-gray-100 p-0 sm:p-4 overflow-hidden">
         <div 
           className="metallic-card-3d pointer-events-auto"
           style={{
