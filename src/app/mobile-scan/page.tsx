@@ -264,16 +264,6 @@ export default function MobileScanPage() {
       
       await updateDoc(doc(db, 'tickets', result.docId), updateData);
       
-      setResult({
-        ...result,
-        ticket: {
-          ...result.ticket,
-          redeemedCount: newRedeemedCount,
-          used: isFullyRedeemed,
-          totalSeats: totalSeats
-        }
-      });
-      
       // Actualizar el estado del resultado
       const updatedResult = {
         ...result,
