@@ -4,8 +4,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Configurar cliente S3 para Backblaze B2
 const s3Client = new S3Client({
-  region: 'us-east-1',
-  endpoint: 'https://s3.us-east-005.backblazeb2.com',
+  region: process.env.BACKBLAZE_REGION || 'us-east-005',
+  endpoint: process.env.BACKBLAZE_ENDPOINT || 'https://s3.us-east-005.backblazeb2.com',
   credentials: {
     accessKeyId: process.env.BACKBLAZE_KEY_ID || '',
     secretAccessKey: process.env.BACKBLAZE_APPLICATION_KEY || '',

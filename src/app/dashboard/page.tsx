@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import PaymentAlertButton from '@/components/ui/payment-alert-button';
-import { Music, Clock, Trophy, Calendar, CreditCard, Camera } from 'lucide-react';
+import EventSales from '@/components/dashboard/EventSales';
+import { Music, Clock, Trophy, Calendar, CreditCard, Camera, QrCode } from 'lucide-react';
 
 const DashboardPage = () => {
   const { user, signOut } = useAuth();
@@ -480,6 +481,18 @@ const DashboardPage = () => {
                   <Camera size={16} style={{ marginRight: '8px' }} />
                   Galería
                 </AnimatedButton>
+                
+                <AnimatedButton
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => router.push('/scan-qr')}
+                  animationType="bounce"
+                  animate={true}
+                  delay={0.4}
+                >
+                  <QrCode size={16} style={{ marginRight: '8px' }} />
+                  Escáner QR
+                </AnimatedButton>
               </div>
             </div>
 
@@ -577,6 +590,76 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Event Sales Section */}
+        <EventSales />
+      </div>
+
+      {/* QR Link Box */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+        border: '1px solid #e5e7eb',
+        marginTop: '30px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <QrCode size={32} color="#ef4444" />
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                Escáner de QR
+              </h3>
+              <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                Link para verificar entradas
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              readOnly
+              value="http://localhost:3000/scan-qr"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '14px',
+                backgroundColor: '#f8fafc',
+                color: '#1f2937',
+                minWidth: '280px',
+                width: '100%'
+              }}
+            />
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText('http://localhost:3000/scan-qr');
+                alert('Link copiado');
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ef4444';
+              }}
+            >
+              Copiar
+            </button>
           </div>
         </div>
       </div>

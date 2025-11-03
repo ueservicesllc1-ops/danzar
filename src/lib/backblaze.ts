@@ -3,11 +3,11 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Configuración de Backblaze B2 usando API S3 compatible
 const s3Client = new S3Client({
-  region: 'us-east-005',
-  endpoint: 'https://s3.us-east-005.backblazeb2.com',
+  region: process.env.BACKBLAZE_REGION || 'us-east-005',
+  endpoint: process.env.BACKBLAZE_ENDPOINT || 'https://s3.us-east-005.backblazeb2.com',
   credentials: {
-    accessKeyId: '005c2b526be0baa0000000018',
-    secretAccessKey: 'K005qruZtIRrrVLiHSIGroEu1ikeVvU',
+    accessKeyId: process.env.BACKBLAZE_KEY_ID || '',
+    secretAccessKey: process.env.BACKBLAZE_APPLICATION_KEY || '',
   },
   forcePathStyle: true,
 });
@@ -19,7 +19,7 @@ export const BUCKET_NAME = 'danzar';
 export const PUBLIC_ENDPOINT = 'https://s3.us-east-005.backblazeb2.com';
 
 // Función para subir una imagen
-export const uploadImage = async (file: File, fileName: string): Promise<string> => {
+export const uploadImage = async (file: File, fileName: string, folder: string = 'images'): Promise<string> => {
   try {
     // Convertir archivo a buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -28,7 +28,7 @@ export const uploadImage = async (file: File, fileName: string): Promise<string>
     // Comando para subir archivo
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
-      Key: `images/${fileName}`,
+      Key: `${folder}/${fileName}`,
       Body: buffer,
       ContentType: file.type,
       ACL: 'public-read', // Hacer el archivo público
@@ -38,7 +38,7 @@ export const uploadImage = async (file: File, fileName: string): Promise<string>
     await s3Client.send(command);
     
     // Retornar URL pública
-    return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/images/${fileName}`;
+    return `${PUBLIC_ENDPOINT}/${BUCKET_NAME}/${folder}/${fileName}`;
   } catch (error) {
     console.error('Error subiendo imagen:', error);
     throw error;

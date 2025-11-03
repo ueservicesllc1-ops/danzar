@@ -33,3 +33,11 @@ export interface Reservation {
   timestamp: Date;
 }
 
+export interface PaymentDetails {
+  id: string;
+  lastDigits?: string;
+  screenshot?: string;
+  fileName?: string;
+  [key: string]: unknown; // Para propiedades adicionales de PayPal u otros métodos
+}
+

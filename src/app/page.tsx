@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 // Imágenes del carrusel
 const heroImages = [
@@ -69,10 +68,9 @@ export default function HomePage() {
       <div className="relative h-[80vh] overflow-hidden">
         {/* Carrusel de imágenes */}
         <div className="relative w-full h-full">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 1, ease: "easeInOut" }}
@@ -92,41 +90,14 @@ export default function HomePage() {
 
           {/* Logo centrado */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-            <motion.img 
+            <img 
               src="/images/logo.png" 
               alt="DanZar Logo" 
               className="h-48 sm:h-60 lg:h-72 object-contain cursor-pointer hover:scale-110 hover:brightness-110 transition-all duration-300 ease-out"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 1.5,
-                ease: "easeOut",
-                delay: 0.8
-              }}
               style={{
                 filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
               }}
             />
-          </div>
-
-          {/* Botones */}
-          <div className="absolute bottom-68 left-1/2 transform -translate-x-1/2 z-10">
-            <div className="flex gap-4">
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold w-48"
-              >
-                Ver Clases
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 text-lg font-semibold w-48"
-              >
-                <PlayIcon className="w-5 h-5 mr-2" />
-                Ver Galería
-              </Button>
-            </div>
           </div>
 
           {/* Controles del carrusel */}
@@ -140,7 +111,7 @@ export default function HomePage() {
                 onMouseEnter={() => setIsPlaying(false)}
                 className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
               >
-                <ChevronLeftIcon className="w-6 h-6" />
+                <ChevronLeft className="w-6 h-6" />
               </motion.button>
               
               {/* Indicadores */}
@@ -168,7 +139,7 @@ export default function HomePage() {
                 onMouseEnter={() => setIsPlaying(false)}
                 className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
               >
-                <ChevronRightIcon className="w-6 h-6" />
+                <ChevronRight className="w-6 h-6" />
               </motion.button>
             </div>
           </div>
@@ -182,9 +153,9 @@ export default function HomePage() {
               className="p-3 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 backdrop-blur-sm"
             >
               {isPlaying ? (
-                <PauseIcon className="w-6 h-6" />
+                <Pause className="w-6 h-6" />
               ) : (
-                <PlayIcon className="w-6 h-6" />
+                <Play className="w-6 h-6" />
               )}
             </motion.button>
           </div>

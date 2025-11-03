@@ -1,5 +1,7 @@
 'use client';
 
+import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+
 export default function Footer() {
   return (
     <div style={{
@@ -61,92 +63,120 @@ export default function Footer() {
             Síguenos
           </h3>
           <div style={{ display: 'flex', gap: '15px' }}>
-            <a href="https://facebook.com/danzar" style={{ 
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#1877f2',
-              borderRadius: '50%',
-              textAlign: 'center',
-              lineHeight: '40px',
-              color: 'white',
-              textDecoration: 'none',
-              fontSize: '18px',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1)';
-            }}>
-              f
+            <a 
+              href="https://facebook.com/danzar" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '44px',
+                height: '44px',
+                backgroundColor: '#1877f2',
+                borderRadius: '50%',
+                color: 'white',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(24, 119, 242, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.transform = 'scale(1.15) translateY(-2px)');
+                (e.currentTarget.style.boxShadow = '0 4px 12px rgba(24, 119, 242, 0.4)');
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.transform = 'scale(1) translateY(0)');
+                (e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 119, 242, 0.3)');
+              }}
+            >
+              <Facebook size={20} />
             </a>
             
-            <a href="https://instagram.com/danzar" style={{ 
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#e4405f',
-              borderRadius: '50%',
-              textAlign: 'center',
-              lineHeight: '40px',
-              color: 'white',
-              textDecoration: 'none',
-              fontSize: '18px',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1)';
-            }}>
-              📷
+            <a 
+              href="https://instagram.com/danzar" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '44px',
+                height: '44px',
+                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                borderRadius: '50%',
+                color: 'white',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(225, 48, 108, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.transform = 'scale(1.15) translateY(-2px)');
+                (e.currentTarget.style.boxShadow = '0 4px 12px rgba(225, 48, 108, 0.4)');
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.transform = 'scale(1) translateY(0)');
+                (e.currentTarget.style.boxShadow = '0 2px 8px rgba(225, 48, 108, 0.3)');
+              }}
+            >
+              <Instagram size={20} />
             </a>
             
-            <a href="https://twitter.com/danzar" style={{ 
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#1da1f2',
-              borderRadius: '50%',
-              textAlign: 'center',
-              lineHeight: '40px',
-              color: 'white',
-              textDecoration: 'none',
-              fontSize: '18px',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1)';
-            }}>
-              t
+            <a 
+              href="https://twitter.com/danzar" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '44px',
+                height: '44px',
+                backgroundColor: '#1da1f2',
+                borderRadius: '50%',
+                color: 'white',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(29, 161, 242, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.transform = 'scale(1.15) translateY(-2px)');
+                (e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 161, 242, 0.4)');
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.transform = 'scale(1) translateY(0)');
+                (e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 161, 242, 0.3)');
+              }}
+            >
+              <Twitter size={20} />
             </a>
             
-            <a href="https://youtube.com/danzar" style={{ 
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#ff0000',
-              borderRadius: '50%',
-              textAlign: 'center',
-              lineHeight: '40px',
-              color: 'white',
-              textDecoration: 'none',
-              fontSize: '18px',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'scale(1)';
-            }}>
-              ▶
+            <a 
+              href="https://youtube.com/danzar" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '44px',
+                height: '44px',
+                backgroundColor: '#ff0000',
+                borderRadius: '50%',
+                color: 'white',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(255, 0, 0, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.transform = 'scale(1.15) translateY(-2px)');
+                (e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 0, 0, 0.4)');
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.transform = 'scale(1) translateY(0)');
+                (e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 0, 0, 0.3)');
+              }}
+            >
+              <Youtube size={20} />
             </a>
           </div>
         </div>

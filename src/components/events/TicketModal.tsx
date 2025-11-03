@@ -1,11 +1,10 @@
 'use client';
 
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Share2, Calendar, MapPin, Clock, User, Ticket as TicketIcon } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { X, Download, Share2, Calendar, MapPin, Clock, User, Ticket as TicketIcon, Copy, Check } from 'lucide-react';
 import { Seat, Event } from '@/types/events';
 import { Button } from '@/components/ui/button';
-import { useRef } from 'react';
 
 interface TicketModalProps {
   isOpen: boolean;
@@ -23,6 +22,57 @@ export default function TicketModal({
   confirmationCode 
 }: TicketModalProps) {
   const ticketRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+  const [QRCodeComponent, setQRCodeComponent] = useState<React.ComponentType<{ value: string; size: number; level?: string; includeMargin?: boolean; imageSettings?: unknown }> | null>(null);
+  
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let mounted = true;
+    
+    import('qrcode.react')
+      .then((module) => {
+        if (!mounted) return;
+        const QRCode = module.QRCodeSVG;
+        if (QRCode) {
+          setQRCodeComponent(QRCode);
+        }
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        console.error('Error cargando QRCodeSVG:', error);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  
+  // Generar enlace único del ticket
+  const ticketUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/ticket/${confirmationCode}`
+    : '';
+
+  const handleCopyLink = async () => {
+    if (ticketUrl) {
+      try {
+        await navigator.clipboard.writeText(ticketUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Error copiando enlace:', err);
+        // Fallback para navegadores que no soportan clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = ticketUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
 
   const handleDownload = () => {
     // En una aplicación real, aquí generarías un PDF
@@ -40,9 +90,17 @@ export default function TicketModal({
     }
   };
 
-  const totalPrice = seats.reduce((sum, seat) => sum + seat.price, 0);
-  const serviceFee = totalPrice * 0.1;
-  const finalTotal = totalPrice + serviceFee;
+  const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
+  
+  // Calcular precio con descuentos por paquetes
+  const numTickets = seats.length;
+  let totalPrice = basePrice;
+  
+  if (numTickets === 3) {
+    totalPrice = 30;
+  } else if (numTickets === 5) {
+    totalPrice = 45;
+  }
 
   return (
     <AnimatePresence>
@@ -86,7 +144,7 @@ export default function TicketModal({
               </div>
 
               {/* Ticket Content */}
-              <div className="p-8 flex justify-center">
+              <div className="px-8 pt-4 pb-0 flex justify-center">
                 <div ref={ticketRef} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl overflow-hidden shadow-lg border-4 border-white w-full max-w-3xl">
                   {/* Ticket Header */}
                   <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-8 text-white relative overflow-hidden w-full">
@@ -156,17 +214,9 @@ export default function TicketModal({
                         </div>
 
                         <div className="pt-4 border-t border-gray-300">
-                          <div className="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Subtotal</span>
-                            <span>${totalPrice.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm text-gray-600 mb-2">
-                            <span>Cargo por servicio</span>
-                            <span>${serviceFee.toFixed(2)}</span>
-                          </div>
                           <div className="flex justify-between text-lg font-bold text-gray-900">
                             <span>Total Pagado</span>
-                            <span>${finalTotal.toFixed(2)}</span>
+                            <span>${totalPrice.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -174,18 +224,24 @@ export default function TicketModal({
                       {/* Right Side - QR Code */}
                       <div className="flex flex-col items-center justify-center">
                         <div className="bg-white p-5 rounded-2xl shadow-lg border-2 border-gray-100">
-                          <QRCodeSVG
-                            value={`TICKET-${confirmationCode}-${event.id}`}
-                            size={180}
-                            level="H"
-                            includeMargin={true}
-                            imageSettings={{
-                              src: "/images/logo.png",
-                              height: 35,
-                              width: 35,
-                              excavate: true,
-                            }}
-                          />
+                          {QRCodeComponent ? (
+                            <QRCodeComponent
+                              value={`TICKET-${confirmationCode}-${event.id}`}
+                              size={180}
+                              level="H"
+                              includeMargin={true}
+                              imageSettings={{
+                                src: "/images/logo.png",
+                                height: 35,
+                                width: 35,
+                                excavate: true,
+                              }}
+                            />
+                          ) : (
+                            <div className="w-[180px] h-[180px] flex items-center justify-center bg-gray-100 rounded">
+                              <div className="text-gray-500 text-sm">Cargando QR...</div>
+                            </div>
+                          )}
                         </div>
                         <div className="mt-5 text-center">
                           <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Código de Confirmación</p>
@@ -200,8 +256,8 @@ export default function TicketModal({
                     {/* Important Notice */}
                     <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                       <p className="text-sm text-yellow-800">
-                        <strong>Importante:</strong> Guarda este ticket. Lo necesitarás para ingresar al evento. 
-                        Se recomienda descargar o tomar una captura de pantalla.
+                        <strong>⚠️ Ticket Pendiente de Verificación:</strong> Este ticket será activado luego de verificar el pago. 
+                        Será notificado dentro de las próximas 24 horas. Guarda este ticket para cuando sea activado.
                       </p>
                     </div>
                   </div>
@@ -210,7 +266,7 @@ export default function TicketModal({
               </div>
 
               {/* Action Buttons */}
-              <div className="px-8 pb-8 flex justify-center">
+              <div className="px-8 pb-8 pt-4 flex justify-center bg-white rounded-b-3xl">
                 <div className="w-full max-w-3xl">
                   <div className="flex gap-4 mt-6">
                     <Button
@@ -229,9 +285,70 @@ export default function TicketModal({
                     </Button>
                   </div>
 
+                  {/* Ticket Link Notice */}
+                  <div className="mt-4 p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">
+                    <p className="text-sm font-bold text-blue-900 text-center mb-3">
+                      🔗 Tu Enlace Único del Ticket:
+                    </p>
+                    
+                    {/* Enlace único */}
+                    <div className="flex items-center gap-2 mb-3 bg-white rounded-lg p-3 border border-blue-200">
+                      <a 
+                        href={ticketUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-sm font-mono text-blue-700 hover:text-blue-900 break-all"
+                      >
+                        {ticketUrl}
+                      </a>
+                      <Button
+                        onClick={handleCopyLink}
+                        size="sm"
+                        variant="outline"
+                        className="shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-4 h-4 mr-1 text-green-600" />
+                            <span className="text-green-600">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-1" />
+                            Copiar
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-xs text-blue-800 text-center">
+                        <strong>✨ Ventajas del enlace único:</strong>
+                      </p>
+                      <ul className="text-xs text-blue-700 text-left space-y-1 pl-4">
+                        <li>• Acceso directo sin buscar código</li>
+                        <li>• Funciona sin internet (después de la primera visita)</li>
+                        <li>• Compartible fácilmente</li>
+                        <li>• Guarda automáticamente en tu navegador</li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-blue-200">
+                      <p className="text-xs text-blue-600 text-center">
+                        También puedes buscar por código en{' '}
+                        <a 
+                          href="/mi-ticket" 
+                          className="font-semibold underline hover:text-blue-900"
+                        >
+                          /mi-ticket
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                  
                   {/* Email Notice */}
                   <p className="text-center text-sm text-gray-500 mt-4">
-                    También hemos enviado una copia de tu ticket a tu correo electrónico
+                    También hemos enviado esta información a tu correo electrónico
                   </p>
                 </div>
               </div>

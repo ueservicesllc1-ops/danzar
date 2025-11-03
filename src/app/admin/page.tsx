@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { User, CreditCard, Music, Settings, Shield, Zap, Circle, Users } from 'lucide-react';
+import { User, CreditCard, Music, Settings, Shield, Zap, Circle, Users, QrCode } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const router = useRouter();
+  const [showQRModal, setShowQRModal] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalClasses: 0,
@@ -77,6 +78,13 @@ const AdminDashboard = () => {
       icon: <CreditCard size={24} />,
       link: '/admin/payments',
       color: '#f59e0b'
+    },
+    {
+      title: 'Escáner de QR',
+      description: 'Verificar y validar entradas',
+      icon: <QrCode size={24} />,
+      link: '/scan-qr',
+      color: '#ef4444'
     },
     {
       title: 'Configuración',
@@ -323,7 +331,13 @@ const AdminDashboard = () => {
             {quickActions.map((action, index) => (
               <button
                 key={index}
-                onClick={() => router.push(action.link)}
+                onClick={() => {
+                  if (action.link === '/scan-qr') {
+                    setShowQRModal(true);
+                  } else {
+                    router.push(action.link);
+                  }
+                }}
                 style={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
@@ -455,6 +469,205 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* QR Link Box */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+        border: '1px solid #e5e7eb',
+        marginBottom: '30px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <QrCode size={32} color="#ef4444" />
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                Escáner de QR
+              </h3>
+              <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                Link para verificar entradas
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="text"
+              readOnly
+              value="http://localhost:3000/scan-qr"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '14px',
+                backgroundColor: '#f8fafc',
+                color: '#1f2937',
+                width: '300px'
+              }}
+            />
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText('http://localhost:3000/scan-qr');
+                alert('Link copiado');
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ef4444';
+              }}
+            >
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* QR Scanner Modal */}
+      {showQRModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <QrCode size={64} color="#ef4444" style={{ margin: '0 auto 16px' }} />
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+                Escáner de QR
+              </h2>
+              <p style={{ color: '#6b7280' }}>
+                Accede al escáner de códigos QR para verificar entradas
+              </p>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '24px'
+            }}>
+              <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px', fontWeight: '600' }}>
+                URL del Escáner:
+              </p>
+              <input
+                type="text"
+                readOnly
+                value="http://localhost:3000/scan-qr"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: 'white',
+                  color: '#1f2937'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText('http://localhost:3000/scan-qr');
+                  alert('Link copiado al portapapeles');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  color: '#6b7280',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f8fafc';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'white';
+                }}
+              >
+                Copiar Link
+              </button>
+              <button
+                onClick={() => router.push('/scan-qr')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ef4444';
+                }}
+              >
+                Ir
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowQRModal(false)}
+              style={{
+                width: '100%',
+                marginTop: '16px',
+                padding: '8px',
+                border: 'none',
+                borderRadius: '8px',
+                backgroundColor: 'transparent',
+                color: '#6b7280',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#1f2937';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#6b7280';
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

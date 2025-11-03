@@ -4,37 +4,37 @@
   /* Colores principales - Nueva paleta DanZar */
   --background: #ffffff;
   --foreground: #1f2937;
-  --primary: #F5AC46;
+  --primary: #efb810;
   --primary-foreground: #ffffff;
   --secondary: #f8fafc;
   --secondary-foreground: #475569;
-  --accent: #EB719C;
+  --accent: #9B0000;
   --accent-foreground: #ffffff;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --border: #e2e8f0;
   --input: #ffffff;
-  --ring: #F5AC46;
+  --ring: #efb810;
   --radius: 0.5rem;
   --card: #ffffff;
   --card-foreground: #1f2937;
   --popover: #ffffff;
   --popover-foreground: #1f2937;
-  --destructive: #ef4444;
+  --destructive: #9B0000;
   --destructive-foreground: #ffffff;
-  --chart-1: #F5AC46;
-  --chart-2: #EB719C;
+  --chart-1: #efb810;
+  --chart-2: #9B0000;
   --chart-3: #06b6d4;
   --chart-4: #f59e0b;
   --chart-5: #10b981;
   --sidebar: #f8fafc;
   --sidebar-foreground: #475569;
-  --sidebar-primary: #F5AC46;
+  --sidebar-primary: #efb810;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1f5f9;
   --sidebar-accent-foreground: #475569;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #F5AC46;
+  --sidebar-ring: #efb810;
 }
 
 @theme inline {
@@ -117,7 +117,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
+  background: #9B0000;
 }
 
 /* Selección de texto personalizada */
@@ -128,22 +128,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Utilidades personalizadas */
 .glow-effect {
-  box-shadow: 0 0 20px rgba(245, 172, 70, 0.3);
+  box-shadow: 0 0 20px rgba(239, 184, 16, 0.3);
 }
 
 .glow-effect-lg {
-  box-shadow: 0 0 40px rgba(245, 172, 70, 0.4);
+  box-shadow: 0 0 40px rgba(239, 184, 16, 0.4);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #F5AC46 0%, #EB719C 100%);
+  background: linear-gradient(135deg, #efb810 0%, #9B0000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #F5AC46 0%, #EB719C 100%);
+  background: linear-gradient(135deg, #efb810 0%, #9B0000 100%);
 }
 
 .glass-effect {

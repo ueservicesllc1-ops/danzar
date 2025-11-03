@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,6 +41,7 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} antialiased bg-white text-gray-900 min-h-screen`}
       >
         <AuthProvider>
+          <ServiceWorkerRegistration />
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-1 pt-12">

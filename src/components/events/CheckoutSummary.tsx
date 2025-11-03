@@ -10,24 +10,41 @@ interface CheckoutSummaryProps {
   selectedSeats: Seat[];
   onRemoveSeat: (seat: Seat) => void;
   onCheckout: () => void;
+  onTestEmail?: () => void;
 }
 
 export default function CheckoutSummary({ 
   event, 
   selectedSeats, 
   onRemoveSeat,
-  onCheckout 
+  onCheckout,
+  onTestEmail
 }: CheckoutSummaryProps) {
-  const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
-  const serviceFee = totalPrice * 0.1; // 10% de cargo por servicio
-  const finalTotal = totalPrice + serviceFee;
+  const basePrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+  
+  // Calcular precio con descuentos por paquetes
+  const numTickets = selectedSeats.length;
+  let totalPrice = basePrice;
+  let discount = 0;
+  let packageType = null;
+
+  if (numTickets === 3) {
+    totalPrice = 30;
+    discount = basePrice - 30;
+    packageType = 'Paquete 3x30';
+  } else if (numTickets === 5) {
+    totalPrice = 45;
+    discount = basePrice - 45;
+    packageType = 'Paquete 5x45';
+  }
 
   if (selectedSeats.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 sticky top-8"
+        className="bg-white rounded-2xl p-8 sm:p-10 lg:p-12 shadow-lg border border-gray-200 sticky top-8"
+        style={{ marginBottom: '1rem' }}
       >
         <div className="text-center py-8">
           <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -42,7 +59,8 @@ export default function CheckoutSummary({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 sticky top-8"
+      className="bg-white rounded-2xl shadow-lg border border-gray-200 sticky top-8"
+      style={{ marginBottom: '1rem', padding: '2rem' }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
@@ -52,9 +70,9 @@ export default function CheckoutSummary({
 
       {/* Event Info */}
       <div className="mb-6">
-        <h4 className="font-semibold text-gray-900 mb-1">{event.title}</h4>
-        <p className="text-sm text-gray-600">{event.artist}</p>
-        <p className="text-sm text-gray-500">{event.date} • {event.time}</p>
+        <h4 className="font-semibold text-gray-900 mb-2">{event.title}</h4>
+        <p className="text-sm text-gray-600 mb-1">{event.artist}</p>
+        <p className="text-sm text-gray-500 mb-1">{event.date} • {event.time}</p>
         <p className="text-sm text-gray-500">{event.venue}</p>
       </div>
 
@@ -94,20 +112,29 @@ export default function CheckoutSummary({
 
       {/* Price Breakdown */}
       <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
-        <div className="flex justify-between text-gray-700">
-          <span>Subtotal ({selectedSeats.length} {selectedSeats.length === 1 ? 'entrada' : 'entradas'})</span>
-          <span className="font-medium">${totalPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-gray-700">
-          <span>Cargo por servicio (10%)</span>
-          <span className="font-medium">${serviceFee.toFixed(2)}</span>
-        </div>
+        {packageType ? (
+          <>
+            <div className="flex justify-between text-gray-700">
+              <span>{numTickets} entradas (precio regular)</span>
+              <span className="font-medium">${basePrice.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-green-600 font-semibold">
+              <span>Descuento - {packageType}</span>
+              <span>-${discount.toFixed(2)}</span>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between text-gray-700">
+            <span>{selectedSeats.length} {selectedSeats.length === 1 ? 'entrada' : 'entradas'}</span>
+            <span className="font-medium">${basePrice.toFixed(2)}</span>
+          </div>
+        )}
       </div>
 
       {/* Total */}
       <div className="flex justify-between items-center mb-6">
         <span className="text-lg font-bold text-gray-900">Total</span>
-        <span className="text-2xl font-bold text-purple-600">${finalTotal.toFixed(2)}</span>
+        <span className="text-2xl font-bold text-purple-600">${totalPrice.toFixed(2)}</span>
       </div>
 
       {/* Checkout Button */}
@@ -123,6 +150,17 @@ export default function CheckoutSummary({
       <p className="text-xs text-gray-500 text-center mt-4">
         🔒 Pago seguro y protegido
       </p>
+
+      {/* Test Email Button */}
+      {onTestEmail && (
+        <Button
+          onClick={onTestEmail}
+          variant="outline"
+          className="w-full mt-3 gap-2 bg-purple-600 hover:bg-purple-700 text-white border-purple-600"
+        >
+          📧 Test Email
+        </Button>
+      )}
     </motion.div>
   );
 }
