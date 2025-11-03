@@ -267,46 +267,9 @@ export default function TicketPage() {
   }
 
   return (
-    <div className="min-h-screen w-full">
-      {/* Header - Eliminado para pantalla completa móvil */}
-      {false && (
-      <div className="hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="outline" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Volver
-              </Button>
-            </Link>
-            <div className="flex items-center gap-4">
-              {/* Indicador de conexión */}
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
-                {isOnline ? (
-                  <>
-                    <Wifi className="w-4 h-4 text-green-600" />
-                    <span className="text-xs text-green-700 font-medium">En línea</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-4 h-4 text-orange-600" />
-                    <span className="text-xs text-orange-700 font-medium">Sin conexión</span>
-                  </>
-                )}
-              </div>
-              {loadedFromCache && (
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100">
-                  <span className="text-xs text-purple-700 font-medium">💾 Modo Offline</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
-
+    <div className="fixed inset-0 w-full h-full overflow-hidden">
       {/* Main Content - Ticket Metálico 3D */}
-      <div className="w-full min-h-screen flex items-center justify-center bg-gray-100 p-0 sm:p-4">
+      <div className="w-full h-full flex items-center justify-center bg-gray-100 p-0 sm:p-4 overflow-hidden">
         <div 
           className="metallic-card-3d pointer-events-auto"
           style={{
