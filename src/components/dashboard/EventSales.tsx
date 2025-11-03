@@ -26,6 +26,7 @@ interface Sale {
   };
   qrCode?: string;
   status?: string;
+  used?: boolean;
   [key: string]: unknown;
 }
 
@@ -223,7 +224,7 @@ export default function EventSales() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
                       <Users size={18} color="#6b7280" />
                       <strong style={{ color: '#1f2937', fontSize: '15px' }}>{sale.customer?.firstName || ''} {sale.customer?.lastName || ''}</strong>
                       <span style={{
@@ -236,6 +237,18 @@ export default function EventSales() {
                       }}>
                         {sale.status === 'approved' ? 'Confirmado' : 'Pendiente'}
                       </span>
+                      {sale.used && (
+                        <span style={{
+                          backgroundColor: '#fef3c7',
+                          color: '#d97706',
+                          padding: '2px 6px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: '600'
+                        }}>
+                          REDIMIDO
+                        </span>
+                      )}
                     </div>
                     <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '2px' }}>
                       {sale.customer?.email || 'N/A'}
