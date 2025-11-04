@@ -198,8 +198,12 @@ export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBoli
             ≈ {equivalenteVES} Bs <span style={{ fontSize: '14px', fontWeight: 400 }}>(Tasa BCV)</span>
           </p>
         )}
+<<<<<<< HEAD
         {/* Ocultar equivalente USD - mantener código pero no mostrar */}
         {false && equivalenteUSD && (
+=======
+        {equivalenteUSD && (
+>>>>>>> 425b6424103a15c123d470337f1abae0e67db445
           <p style={{
             fontSize: '18px',
             color: '#d4af37',
@@ -244,8 +248,12 @@ export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBoli
             1 EUR = {tasaEUR_VES_Display} Bs
           </p>
         )}
+<<<<<<< HEAD
         {/* Ocultar tasa USD - mantener código pero no mostrar */}
         {false && tasaUSD_VES && (
+=======
+        {tasaUSD_VES && (
+>>>>>>> 425b6424103a15c123d470337f1abae0e67db445
           <p style={{
             fontSize: '14px',
             color: '#d4af37',
