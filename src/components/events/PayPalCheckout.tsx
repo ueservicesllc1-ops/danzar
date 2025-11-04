@@ -14,15 +14,21 @@ interface PayPalCheckoutProps {
 export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalCheckoutProps) {
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
+  // Nueva lógica de precios: 3 o 4 entradas = €10 c/u, 5+ entradas = €9 c/u
+  // Nota: PayPal procesa en USD, por lo que se convierte EUR a USD
   const numTickets = seats.length;
-  let totalPrice = basePrice;
+  let totalPriceEUR = basePrice;
   
   if (numTickets === 3 || numTickets === 4) {
-    totalPrice = numTickets * 10; // $10 cada una
+    totalPriceEUR = numTickets * 10; // €10 cada una
   } else if (numTickets >= 5) {
-    totalPrice = numTickets * 9; // $9 cada una
+    totalPriceEUR = numTickets * 9; // €9 cada una
   }
+
+  // Convertir EUR a USD para PayPal (tasa aproximada: 1 EUR = 0.87 USD)
+  // Esta tasa debería actualizarse dinámicamente en producción
+  const tasaEUR_USD = 0.87; // Tasa aproximada, idealmente se obtendría de la API
+  const totalPriceUSD = totalPriceEUR / tasaEUR_USD;
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
@@ -70,7 +76,7 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
           <div className="flex justify-between items-center">
             <span className="text-lg font-bold text-gray-900">Total a Pagar</span>
             <span className="text-2xl font-bold" style={{ color: '#9B0000' }}>
-              ${totalPrice.toFixed(2)}
+              €{totalPriceEUR.toFixed(2)} (≈ ${totalPriceUSD.toFixed(2)} USD)
             </span>
           </div>
         </div>
@@ -88,6 +94,8 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
             clientId: clientId,
             currency: 'USD',
             intent: 'capture',
+            // Deshabilitar paylater para evitar verificación adicional
+            disableFunding: 'paylater',
           }}
           deferLoading={false}
         >
@@ -100,15 +108,19 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
               height: 55,
             }}
             createOrder={(data, actions) => {
-              // Calcular item_total basado en nueva lógica de precios
-              const itemTotal = (numTickets === 3 || numTickets === 4) 
+              // Calcular item_total en EUR basado en nueva lógica de precios
+              const itemTotalEUR = (numTickets === 3 || numTickets === 4) 
                 ? numTickets * 10 
                 : (numTickets >= 5) 
                   ? numTickets * 9 
                   : basePrice;
               
+              // Convertir a USD para PayPal
+              const itemTotalUSD = itemTotalEUR / tasaEUR_USD;
+              
               // Si hay descuento, ajustar el precio por asiento
-              const adjustedSeatPrice = itemTotal / numTickets;
+              const adjustedSeatPriceEUR = itemTotalEUR / numTickets;
+              const adjustedSeatPriceUSD = adjustedSeatPriceEUR / tasaEUR_USD;
               
               return actions.order.create({
                 intent: 'CAPTURE',
@@ -117,25 +129,26 @@ export default function PayPalCheckout({ seats, onSuccess, onError }: PayPalChec
                     description: `The Greatest Showdance - ${seats.length} Ticket(s)`,
                     amount: {
                       currency_code: 'USD',
-                      value: totalPrice.toFixed(2),
+                      value: totalPriceUSD.toFixed(2),
                       breakdown: {
                         item_total: {
                           currency_code: 'USD',
-                          value: totalPrice.toFixed(2),
+                          value: itemTotalUSD.toFixed(2),
                         },
                       },
                     },
                     items: seats.map((seat, index) => {
-                      // Para mantener la consistencia, usar precio ajustado
-                      const finalPrice = (numTickets === 3 || numTickets === 5) 
-                        ? adjustedSeatPrice 
+                      // Para mantener la consistencia, usar precio ajustado en USD
+                      const finalPriceEUR = (numTickets === 3 || numTickets === 4 || numTickets >= 5) 
+                        ? adjustedSeatPriceEUR 
                         : seat.price;
+                      const finalPriceUSD = finalPriceEUR / tasaEUR_USD;
                       
                       return {
                         name: `Asiento ${seat.row}${seat.number}`,
                         unit_amount: {
                           currency_code: 'USD',
-                          value: finalPrice.toFixed(2),
+                          value: finalPriceUSD.toFixed(2),
                         },
                         quantity: '1',
                         category: 'DIGITAL_GOODS' as const,

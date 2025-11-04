@@ -186,7 +186,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                           ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                           shadow-sm hover:shadow-md
                         `}
-                        title={`${row}${seat.number} - ${categoryLabels[seat.category]} - $${seat.price}`}
+                        title={`${row}${seat.number} - ${categoryLabels[seat.category]} - €${seat.price}`}
                       >
                         {seat.number}
                       </motion.button>
@@ -224,7 +224,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                             ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                             shadow-sm hover:shadow-md
                           `}
-                          title={`${row}${seat.number} - ${categoryLabels[seat.category]} - $${seat.price}`}
+                          title={`${row}${seat.number} - ${categoryLabels[seat.category]} - €${seat.price}`}
                         >
                           {seat.number}
                         </button>
@@ -281,7 +281,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                           ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                           shadow-sm hover:shadow-md
                         `}
-                        title={`${row}${seat.number} - ${categoryLabels[seat.category]} - $${seat.price}`}
+                        title={`${row}${seat.number} - ${categoryLabels[seat.category]} - €${seat.price}`}
                       >
                         {seat.number}
                       </motion.button>
@@ -319,7 +319,7 @@ export default function SeatMap({ seats, onSeatSelect, selectedSeats }: SeatMapP
                             ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}
                             shadow-sm hover:shadow-md
                           `}
-                          title={`${row}${seat.number} - ${categoryLabels[seat.category]} - $${seat.price}`}
+                          title={`${row}${seat.number} - ${categoryLabels[seat.category]} - €${seat.price}`}
                         >
                           {seat.number}
                         </button>

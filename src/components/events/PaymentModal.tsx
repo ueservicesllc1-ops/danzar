@@ -2,10 +2,20 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { X, QrCode } from 'lucide-react';
 import { Seat, Event, PaymentDetails } from '@/types/events';
-import PayPalCheckout from './PayPalCheckout';
 import ConversorBolivares from './ConversorBolivares';
+
+// Cargar PayPalCheckout dinámicamente para evitar problemas de hidratación
+const PayPalCheckout = dynamic(() => import('./PayPalCheckout'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="text-gray-600">Cargando PayPal...</div>
+    </div>
+  ),
+});
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -40,14 +50,14 @@ export default function PaymentModal({
   };
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
+  // Nueva lógica de precios: 3 o 4 entradas = €10 c/u, 5+ entradas = €9 c/u
   const numTickets = seats.length;
   let totalPrice = basePrice;
   
   if (numTickets === 3 || numTickets === 4) {
-    totalPrice = numTickets * 10; // $10 cada una
+    totalPrice = numTickets * 10; // €10 cada una
   } else if (numTickets >= 5) {
-    totalPrice = numTickets * 9; // $9 cada una
+    totalPrice = numTickets * 9; // €9 cada una
   }
 
   return (
@@ -105,7 +115,7 @@ export default function PaymentModal({
                 <div style={{ borderTop: '2px solid #9B0000', paddingTop: '20px', marginTop: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <span style={{ fontSize: '20px', fontWeight: 'bold' }}>Total a Pagar:</span>
-                    <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>${totalPrice.toFixed(2)}</span>
+                    <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>€{totalPrice.toFixed(2)}</span>
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -218,8 +228,8 @@ export default function PaymentModal({
                 {/* Monto */}
                 <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '4px', border: '2px solid #efb810' }}>
                   <p style={{ margin: '0', fontSize: '16px' }}><strong>Monto a Transferir:</strong></p>
-                  <p style={{ margin: '5px 0 0 0', fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>${totalPrice.toFixed(2)}</p>
-                  <ConversorBolivares montoUSD={totalPrice} />
+                  <p style={{ margin: '5px 0 0 0', fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>€{totalPrice.toFixed(2)}</p>
+                  <ConversorBolivares montoUSD={totalPrice} montoEUR={totalPrice} />
                 </div>
 
                 {/* Form */}

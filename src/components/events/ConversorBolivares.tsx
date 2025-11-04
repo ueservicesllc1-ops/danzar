@@ -3,12 +3,16 @@
 import { useState, useEffect } from 'react';
 
 interface ConversorBolivaresProps {
-  montoUSD: number;
+  montoUSD: number; // Mantener el nombre para compatibilidad, pero ahora es EUR
+  montoEUR?: number; // Nuevo prop opcional para claridad
 }
 
-export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps) {
+export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBolivaresProps) {
+  // Usar montoEUR si está disponible, sino usar montoUSD (para compatibilidad)
+  const monto = montoEUR ?? montoUSD;
   const [tasaBCV, setTasaBCV] = useState<number | null>(null);
-  const [tasaEUR, setTasaEUR] = useState<number | null>(null);
+  const [tasaEUR_USD, setTasaEUR_USD] = useState<number | null>(null);
+  const [tasaEUR_VES, setTasaEUR_VES] = useState<number | null>(null); // Nueva tasa EUR/VES calculada con BCV
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [errorEUR, setErrorEUR] = useState(false);
@@ -74,29 +78,37 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
               const errorData = await response.json().catch(() => ({}));
               console.warn('API EUR no disponible:', errorData.error || 'Servicio no disponible');
               setErrorEUR(true);
-              setTasaEUR(null);
+              setTasaEUR_USD(null);
+              setTasaEUR_VES(null);
             } else {
               throw new Error(`Error al obtener la tasa EUR: ${response.status}`);
             }
           } else {
             const data = await response.json();
             if (data.success && data.tasa && typeof data.tasa === 'number' && data.tasa > 0) {
-              setTasaEUR(data.tasa);
+              setTasaEUR_USD(data.tasa); // EUR/USD
+              // Si viene la tasa EUR/VES calculada con BCV, usarla
+              if (data.tasaEUR_VES && typeof data.tasaEUR_VES === 'number' && data.tasaEUR_VES > 0) {
+                setTasaEUR_VES(data.tasaEUR_VES);
+              }
             } else {
               console.warn('Tasa EUR no disponible en la respuesta');
               setErrorEUR(true);
-              setTasaEUR(null);
+              setTasaEUR_USD(null);
+              setTasaEUR_VES(null);
             }
           }
         } catch (err) {
           console.warn('Error procesando tasa EUR:', err instanceof Error ? err.message : 'Error desconocido');
           setErrorEUR(true);
-          setTasaEUR(null);
+          setTasaEUR_USD(null);
+          setTasaEUR_VES(null);
         }
       } else {
         console.warn('Error obteniendo tasa EUR:', eurResponse.reason);
         setErrorEUR(true);
-        setTasaEUR(null);
+        setTasaEUR_USD(null);
+        setTasaEUR_VES(null);
       }
 
       setLoading(false);
@@ -122,15 +134,27 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
     );
   }
 
-  const equivalenteVES = tasaBCV && !error 
-    ? (montoUSD * tasaBCV).toLocaleString('es-VE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : null;
+  // Si el monto está en EUR, usar la tasa EUR/VES calculada con BCV directamente
+  // Si no, convertir USD a Bs usando tasa BCV
+  let equivalenteVES: string | null = null;
+  
+  if (montoEUR !== undefined && tasaEUR_VES && !errorEUR) {
+    // Monto en EUR: usar tasa EUR/VES calculada con BCV
+    equivalenteVES = (monto * tasaEUR_VES).toLocaleString('es-VE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  } else if (tasaBCV && !error) {
+    // Monto en USD: usar tasa BCV directamente
+    equivalenteVES = (monto * tasaBCV).toLocaleString('es-VE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
 
-  const equivalenteEUR = tasaEUR && !errorEUR
-    ? (montoUSD * tasaEUR).toLocaleString('es-ES', {
+  // Mostrar equivalente en USD si el monto está en EUR
+  const equivalenteUSD = (tasaEUR_USD && !errorEUR && montoEUR !== undefined)
+    ? (monto / tasaEUR_USD).toLocaleString('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })
@@ -144,13 +168,19 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
       })
     : null;
 
-  // 1 EUR = (1 EUR en USD) * (1 USD en Bs) = tasaEUR * tasaBCV
-  const tasaEUR_VES = (tasaEUR && tasaBCV && !errorEUR && !error)
-    ? (tasaEUR * tasaBCV).toLocaleString('es-VE', {
+  // Usar la tasa EUR/VES calculada con BCV que viene de la API
+  // Si no está disponible, calcularla usando EUR/USD * USD/VES
+  const tasaEUR_VES_Display = tasaEUR_VES && !errorEUR
+    ? tasaEUR_VES.toLocaleString('es-VE', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })
-    : null;
+    : (tasaEUR_USD && tasaBCV && !errorEUR && !error)
+      ? (tasaEUR_USD * tasaBCV).toLocaleString('es-VE', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : null;
 
   return (
     <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px' }}>
@@ -168,7 +198,8 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
             ≈ {equivalenteVES} Bs <span style={{ fontSize: '14px', fontWeight: 400 }}>(Tasa BCV)</span>
           </p>
         )}
-        {equivalenteEUR && (
+        {/* Ocultar equivalente USD - mantener código pero no mostrar */}
+        {false && equivalenteUSD && (
           <p style={{
             fontSize: '18px',
             color: '#d4af37',
@@ -177,10 +208,10 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
             fontWeight: 600,
             lineHeight: '1.5'
           }}>
-            ≈ €{equivalenteEUR} <span style={{ fontSize: '14px', fontWeight: 400 }}>(EUR)</span>
+            ≈ ${equivalenteUSD} <span style={{ fontSize: '14px', fontWeight: 400 }}>(USD)</span>
           </p>
         )}
-        {!equivalenteVES && !equivalenteEUR && (
+        {!equivalenteVES && !equivalenteUSD && (
           <p style={{
             fontSize: '16px',
             color: '#d4af37',
@@ -195,13 +226,13 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
       </div>
 
       {/* Tasas de cambio - lado derecho */}
-      <div style={{ 
-        flex: '0 0 auto', 
+      <div style={{
+        flex: '0 0 auto',
         textAlign: 'right',
         borderLeft: '1px solid #efb810',
         paddingLeft: '15px'
       }}>
-        {tasaUSD_VES && (
+        {tasaEUR_VES_Display && (
           <p style={{
             fontSize: '14px',
             color: '#d4af37',
@@ -210,10 +241,11 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
             fontWeight: 500,
             lineHeight: '1.4'
           }}>
-            1 USD = {tasaUSD_VES} Bs
+            1 EUR = {tasaEUR_VES_Display} Bs
           </p>
         )}
-        {tasaEUR_VES && (
+        {/* Ocultar tasa USD - mantener código pero no mostrar */}
+        {false && tasaUSD_VES && (
           <p style={{
             fontSize: '14px',
             color: '#d4af37',
@@ -222,7 +254,7 @@ export default function ConversorBolivares({ montoUSD }: ConversorBolivaresProps
             fontWeight: 500,
             lineHeight: '1.4'
           }}>
-            1 EUR = {tasaEUR_VES} Bs
+            1 USD = {tasaUSD_VES} Bs
           </p>
         )}
       </div>

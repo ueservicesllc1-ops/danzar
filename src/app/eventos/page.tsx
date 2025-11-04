@@ -43,7 +43,7 @@ const generateSeats = (): Seat[] => {
   rows.forEach((row, rowIndex) => {
     // Todos los asientos son premium con precio único
     const category: SeatCategory = 'premium';
-    const basePrice: number = 12;
+    const basePrice: number = 12; // Precio en euros
 
     // Generar 24 asientos por fila
     for (let num = 1; num <= totalSeatsPerRow; num++) {
