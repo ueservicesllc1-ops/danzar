@@ -5,7 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { X, QrCode } from 'lucide-react';
 import { Seat, Event, PaymentDetails } from '@/types/events';
-import ConversorBolivares from './ConversorBolivares';
+
+// Cargar ConversorBolivares dinámicamente para evitar problemas de hidratación
+const ConversorBolivares = dynamic(() => import('./ConversorBolivares'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-2">
+      <div className="text-gray-500 text-sm">Cargando tasas...</div>
+    </div>
+  ),
+});
 
 // Cargar PayPalCheckout dinámicamente para evitar problemas de hidratación
 const PayPalCheckout = dynamic(() => import('./PayPalCheckout'), {

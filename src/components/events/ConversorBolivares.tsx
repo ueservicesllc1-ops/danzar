@@ -23,95 +23,57 @@ export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBoli
       setError(false);
       setErrorEUR(false);
       
-      // Obtener ambas tasas en paralelo
-      const [bcvResponse, eurResponse] = await Promise.allSettled([
-        fetch('/api/get-bcv-rate', {
+      try {
+        // Obtener tasa USD/VES del BCV
+        const bcvResponse = await fetch('/api/get-bcv-rate', {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
-        }),
-        fetch('/api/get-eur-rate', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        }),
-      ]);
-
-      // Procesar respuesta BCV
-      if (bcvResponse.status === 'fulfilled') {
-        try {
-          const response = bcvResponse.value;
-          if (!response.ok) {
-            if (response.status === 503 || response.status === 404) {
-              const errorData = await response.json().catch(() => ({}));
-              console.warn('API BCV no disponible:', errorData.error || 'Servicio no disponible');
-              setError(true);
-              setTasaBCV(null);
-            } else {
-              throw new Error(`Error al obtener la tasa BCV: ${response.status}`);
-            }
-          } else {
-            const data = await response.json();
-            if (data.success && data.tasa && typeof data.tasa === 'number' && data.tasa > 0) {
-              setTasaBCV(data.tasa);
-            } else {
-              console.warn('Tasa BCV no disponible en la respuesta');
-              setError(true);
-              setTasaBCV(null);
-            }
-          }
-        } catch (err) {
-          console.warn('Error procesando tasa BCV:', err instanceof Error ? err.message : 'Error desconocido');
-          setError(true);
-          setTasaBCV(null);
-        }
-      } else {
-        console.warn('Error obteniendo tasa BCV:', bcvResponse.reason);
-        setError(true);
-        setTasaBCV(null);
-      }
-
-      // Procesar respuesta EUR
-      if (eurResponse.status === 'fulfilled') {
-        try {
-          const response = eurResponse.value;
-          if (!response.ok) {
-            if (response.status === 503 || response.status === 404) {
-              const errorData = await response.json().catch(() => ({}));
-              console.warn('API EUR no disponible:', errorData.error || 'Servicio no disponible');
-              setErrorEUR(true);
-              setTasaEUR_USD(null);
-              setTasaEUR_VES(null);
-            } else {
-              throw new Error(`Error al obtener la tasa EUR: ${response.status}`);
-            }
-          } else {
-            const data = await response.json();
-            if (data.success && data.tasa && typeof data.tasa === 'number' && data.tasa > 0) {
-              setTasaEUR_USD(data.tasa); // EUR/USD
-              // Si viene la tasa EUR/VES calculada con BCV, usarla
-              if (data.tasaEUR_VES && typeof data.tasaEUR_VES === 'number' && data.tasaEUR_VES > 0) {
-                setTasaEUR_VES(data.tasaEUR_VES);
+        });
+        
+        if (bcvResponse.ok) {
+          const bcvData = await bcvResponse.json();
+          if (bcvData.success && bcvData.tasa && typeof bcvData.tasa === 'number' && bcvData.tasa > 0) {
+            setTasaBCV(bcvData.tasa);
+            
+            // Obtener tasa EUR/USD desde API route (evita problemas de CORS)
+            try {
+              const eurUsdResponse = await fetch('/api/get-eur-usd', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+              });
+              
+              if (eurUsdResponse.ok) {
+                const eurUsdData = await eurUsdResponse.json();
+                if (eurUsdData.success && eurUsdData.tasa && typeof eurUsdData.tasa === 'number' && eurUsdData.tasa > 0) {
+                  const tasaEUR_USD = eurUsdData.tasa;
+                  setTasaEUR_USD(tasaEUR_USD);
+                  
+                  // Calcular EUR/VES = EUR/USD × USD/VES
+                  const tasaEUR_VES_calculada = tasaEUR_USD * bcvData.tasa;
+                  setTasaEUR_VES(tasaEUR_VES_calculada);
+                } else {
+                  setErrorEUR(true);
+                }
+              } else {
+                setErrorEUR(true);
               }
-            } else {
-              console.warn('Tasa EUR no disponible en la respuesta');
+            } catch (err) {
+              console.warn('Error obteniendo tasa EUR/USD:', err);
               setErrorEUR(true);
-              setTasaEUR_USD(null);
-              setTasaEUR_VES(null);
             }
+          } else {
+            setError(true);
           }
-        } catch (err) {
-          console.warn('Error procesando tasa EUR:', err instanceof Error ? err.message : 'Error desconocido');
-          setErrorEUR(true);
-          setTasaEUR_USD(null);
-          setTasaEUR_VES(null);
+        } else {
+          setError(true);
         }
-      } else {
-        console.warn('Error obteniendo tasa EUR:', eurResponse.reason);
+      } catch (err) {
+        console.warn('Error obteniendo tasas:', err);
+        setError(true);
         setErrorEUR(true);
-        setTasaEUR_USD(null);
-        setTasaEUR_VES(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchTasas();
@@ -198,12 +160,8 @@ export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBoli
             ≈ {equivalenteVES} Bs <span style={{ fontSize: '14px', fontWeight: 400 }}>(Tasa BCV)</span>
           </p>
         )}
-<<<<<<< HEAD
         {/* Ocultar equivalente USD - mantener código pero no mostrar */}
         {false && equivalenteUSD && (
-=======
-        {equivalenteUSD && (
->>>>>>> 425b6424103a15c123d470337f1abae0e67db445
           <p style={{
             fontSize: '18px',
             color: '#d4af37',
@@ -248,12 +206,8 @@ export default function ConversorBolivares({ montoUSD, montoEUR }: ConversorBoli
             1 EUR = {tasaEUR_VES_Display} Bs
           </p>
         )}
-<<<<<<< HEAD
         {/* Ocultar tasa USD - mantener código pero no mostrar */}
         {false && tasaUSD_VES && (
-=======
-        {tasaUSD_VES && (
->>>>>>> 425b6424103a15c123d470337f1abae0e67db445
           <p style={{
             fontSize: '14px',
             color: '#d4af37',
