@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, QrCode } from 'lucide-react';
 import { Seat, Event, PaymentDetails } from '@/types/events';
 import PayPalCheckout from './PayPalCheckout';
+import ConversorBolivares from './ConversorBolivares';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -188,7 +189,26 @@ export default function PaymentModal({
 
                 {/* Banco Info */}
                 <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 10px 0' }}>Datos del Banco</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0' }}>Datos del Banco</h3>
+                    <button
+                      onClick={() => setShowQRModal(true)}
+                      style={{
+                        padding: '10px 15px',
+                        backgroundColor: '#efb810',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <QrCode size={20} color="#9B0000" />
+                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#9B0000' }}>Ver Código QR</span>
+                    </button>
+                  </div>
                   <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Banco:</strong> Bancamiga</p>
                   <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>C.I:</strong> 26522453</p>
                   <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Teléfono:</strong> 04149631044</p>
@@ -198,25 +218,8 @@ export default function PaymentModal({
                 {/* Monto */}
                 <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '4px', border: '2px solid #efb810' }}>
                   <p style={{ margin: '0', fontSize: '16px' }}><strong>Monto a Transferir:</strong></p>
-                  <p style={{ margin: '5px 0 15px 0', fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>${totalPrice.toFixed(2)}</p>
-                  <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                    <button
-                      onClick={() => setShowQRModal(true)}
-                      style={{
-                        padding: '15px',
-                        backgroundColor: '#efb810',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <QrCode size={32} color="#9B0000" />
-                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#9B0000' }}>Ver Código QR</span>
-                    </button>
-                  </div>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '28px', fontWeight: 'bold', color: '#9B0000' }}>${totalPrice.toFixed(2)}</p>
+                  <ConversorBolivares montoUSD={totalPrice} />
                 </div>
 
                 {/* Form */}
