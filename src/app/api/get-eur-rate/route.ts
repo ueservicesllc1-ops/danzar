@@ -31,10 +31,16 @@ export async function GET() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
 
-    // Obtener ambas tasas en paralelo: BCV (USD/VES) y EUR/USD
-    // Intentar múltiples APIs para EUR/USD para obtener la más actualizada
-    const [bcvResponse, eurUsdResponse1, eurUsdResponse2] = await Promise.allSettled([
+    // Obtener ambas tasas en paralelo: BCV (USD/VES), BCV EUR (si está disponible), y EUR/USD
+    // Intentar múltiples APIs para obtener la tasa más actualizada
+    const [bcvUSDResponse, bcvEURResponse, eurUsdResponse1, eurUsdResponse2] = await Promise.allSettled([
       fetch('https://bcvapi.tech/api/v1/dolar', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal,
+      }),
+      // Intentar obtener tasa EUR directamente del BCV (puede requerir plan premium o no estar disponible)
+      fetch('https://bcvapi.tech/api/v1/euro', {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         signal: controller.signal,
@@ -53,16 +59,41 @@ export async function GET() {
 
     clearTimeout(timeoutId);
 
-    // Procesar respuesta BCV
-    if (bcvResponse.status !== 'fulfilled' || !bcvResponse.value.ok) {
-      throw new Error(`Error al obtener la tasa BCV: ${bcvResponse.status === 'fulfilled' ? bcvResponse.value.status : 'Failed'}`);
+    // Procesar respuesta BCV USD/VES
+    if (bcvUSDResponse.status !== 'fulfilled' || !bcvUSDResponse.value.ok) {
+      throw new Error(`Error al obtener la tasa BCV: ${bcvUSDResponse.status === 'fulfilled' ? bcvUSDResponse.value.status : 'Failed'}`);
     }
 
-    const bcvData: BCVResponse = await bcvResponse.value.json();
-    const tasaUSD_VES = bcvData?.tasa || bcvData?.precio || bcvData?.precio_dolar || bcvData?.valor;
+    const bcvUSDData: BCVResponse = await bcvUSDResponse.value.json();
+    const tasaUSD_VES_raw: number | string | undefined = bcvUSDData?.tasa || bcvUSDData?.precio || bcvUSDData?.precio_dolar || bcvUSDData?.valor;
     
-    if (!tasaUSD_VES || typeof tasaUSD_VES !== 'number' || tasaUSD_VES <= 0) {
+    // Convertir a número si es string
+    let tasaUSD_VES: number | null = null;
+    if (typeof tasaUSD_VES_raw === 'number') {
+      tasaUSD_VES = tasaUSD_VES_raw;
+    } else if (typeof tasaUSD_VES_raw === 'string') {
+      const tasaString: string = tasaUSD_VES_raw;
+      const cleanedString = tasaString.replace(/[,\s]/g, '');
+      tasaUSD_VES = parseFloat(cleanedString);
+    }
+    
+    if (!tasaUSD_VES || isNaN(tasaUSD_VES) || tasaUSD_VES <= 0) {
       throw new Error('Tasa BCV no disponible');
+    }
+
+    // Intentar obtener tasa EUR/VES directamente del BCV
+    let tasaEUR_VES_BCV: number | null = null;
+    if (bcvEURResponse.status === 'fulfilled' && bcvEURResponse.value instanceof Response && bcvEURResponse.value.ok) {
+      try {
+        const bcvEURData: BCVResponse = await bcvEURResponse.value.json();
+        const tasaRaw = bcvEURData?.tasa || bcvEURData?.precio || bcvEURData?.precio_dolar || bcvEURData?.valor;
+        if (tasaRaw && typeof tasaRaw === 'number' && tasaRaw > 0) {
+          tasaEUR_VES_BCV = tasaRaw;
+          console.log('Tasa EUR/VES obtenida directamente del BCV:', tasaEUR_VES_BCV);
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener tasa EUR del BCV, usando cálculo:', e);
+      }
     }
 
     // Procesar respuesta EUR/USD - intentar múltiples fuentes
@@ -100,17 +131,35 @@ export async function GET() {
       throw new Error('Tasa EUR/USD no disponible de ninguna fuente');
     }
 
-    // Calcular EUR/VES usando la tasa del BCV: EUR/VES = (EUR/USD) * (USD/VES)
-    // Pero también devolvemos EUR/USD para conversiones
-    const tasaEUR_VES = tasaEUR_USD * tasaUSD_VES;
+    // Usar la tasa EUR/VES directamente del BCV si está disponible
+    // Si no, calcular usando: EUR/VES = (EUR/USD) * (USD/VES)
+    let tasaEUR_VES: number;
+    
+    if (tasaEUR_VES_BCV && tasaEUR_VES_BCV > 0) {
+      // Usar la tasa oficial del BCV obtenida directamente
+      tasaEUR_VES = tasaEUR_VES_BCV;
+      console.log('Usando tasa EUR/VES oficial del BCV:', tasaEUR_VES);
+    } else {
+      // Calcular la tasa si no está disponible directamente
+      const tasaEUR_VES_calculada = tasaEUR_USD * tasaUSD_VES;
+      tasaEUR_VES = tasaEUR_VES_calculada;
+      console.log('Usando tasa EUR/VES calculada (BCV no disponible):', tasaEUR_VES);
+    }
+    
+    console.log('Tasas finales:', {
+      tasaUSD_VES,
+      tasaEUR_USD,
+      tasaEUR_VES_BCV_directa: tasaEUR_VES_BCV,
+      tasaEUR_VES_final: tasaEUR_VES
+    });
     
     return NextResponse.json({ 
       success: true, 
       tasa: tasaEUR_USD, // EUR/USD para compatibilidad
       rate: tasaEUR_USD, // alias
-      tasaEUR_VES: tasaEUR_VES, // EUR/VES calculado usando BCV
+      tasaEUR_VES: tasaEUR_VES, // EUR/VES oficial del BCV o calculada
       tasaUSD_VES: tasaUSD_VES, // USD/VES del BCV
-      fecha: bcvData?.fecha || null
+      fecha: bcvUSDData?.fecha || null
     });
   } catch (error) {
     console.error('Error obteniendo tasa EUR:', error);
