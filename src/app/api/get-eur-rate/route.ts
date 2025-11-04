@@ -29,7 +29,7 @@ export async function GET() {
   try {
     // Crear un AbortController para timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 segundos (reducido para evitar timeouts)
 
     // Obtener ambas tasas en paralelo: BCV (USD/VES), BCV EUR (si está disponible), y EUR/USD
     // Intentar múltiples APIs para obtener la tasa más actualizada
