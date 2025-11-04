@@ -22,24 +22,24 @@ export default function CheckoutSummary({
 }: CheckoutSummaryProps) {
   const basePrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
+  // Nueva lógica de precios: 3 o 4 entradas = €10 c/u, 5+ entradas = €9 c/u
   const numTickets = selectedSeats.length;
   let totalPrice = basePrice;
   let discount = 0;
   let packageType = null;
 
   if (numTickets === 3) {
-    totalPrice = 30; // 3 * $10
+    totalPrice = 30; // 3 * €10
     discount = basePrice - 30;
-    packageType = '3 entradas - $10 c/u';
+    packageType = '3 entradas - €10 c/u';
   } else if (numTickets === 4) {
-    totalPrice = 40; // 4 * $10
+    totalPrice = 40; // 4 * €10
     discount = basePrice - 40;
-    packageType = '4 entradas - $10 c/u';
+    packageType = '4 entradas - €10 c/u';
   } else if (numTickets >= 5) {
-    totalPrice = numTickets * 9; // $9 cada una
+    totalPrice = numTickets * 9; // €9 cada una
     discount = basePrice - totalPrice;
-    packageType = `${numTickets} entradas - $9 c/u`;
+    packageType = `${numTickets} entradas - €9 c/u`;
   }
 
   if (selectedSeats.length === 0) {
@@ -113,7 +113,7 @@ export default function CheckoutSummary({
                 <p className="text-sm text-gray-500 capitalize">{seat.category}</p>
               </div>
               <div className="flex items-center gap-3">
-                <p className="font-semibold text-gray-900">${seat.price}</p>
+                <p className="font-semibold text-gray-900">€{seat.price}</p>
                 <button
                   onClick={() => onRemoveSeat(seat)}
                   className="p-1 hover:bg-red-100 rounded-full transition-colors"
@@ -132,7 +132,7 @@ export default function CheckoutSummary({
           <>
             <div className="flex justify-between text-gray-700">
               <span>{numTickets} entradas (precio regular)</span>
-              <span className="font-medium">${basePrice.toFixed(2)}</span>
+              <span className="font-medium">€{basePrice.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-green-600 font-semibold">
               <span>Descuento - {packageType}</span>
@@ -150,7 +150,7 @@ export default function CheckoutSummary({
       {/* Total */}
       <div className="flex justify-between items-center mb-6">
         <span className="text-lg font-bold text-gray-900">Total</span>
-        <span className="text-2xl font-bold text-purple-600">${totalPrice.toFixed(2)}</span>
+        <span className="text-2xl font-bold text-purple-600">€{totalPrice.toFixed(2)}</span>
       </div>
 
       {/* Checkout Button */}

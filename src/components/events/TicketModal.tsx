@@ -76,14 +76,14 @@ export default function TicketModal({
 
   const basePrice = seats.reduce((sum, seat) => sum + seat.price, 0);
   
-  // Nueva lógica de precios: 3 o 4 entradas = $10 c/u, 5+ entradas = $9 c/u
+  // Nueva lógica de precios: 3 o 4 entradas = €10 c/u, 5+ entradas = €9 c/u
   const numTickets = seats.length;
   let totalPrice = basePrice;
   
   if (numTickets === 3 || numTickets === 4) {
-    totalPrice = numTickets * 10; // $10 cada una
+    totalPrice = numTickets * 10; // €10 cada una
   } else if (numTickets >= 5) {
-    totalPrice = numTickets * 9; // $9 cada una
+    totalPrice = numTickets * 9; // €9 cada una
   }
 
   return (
@@ -200,7 +200,7 @@ export default function TicketModal({
                         <div className="pt-4 border-t border-gray-300">
                           <div className="flex justify-between text-lg font-bold text-gray-900">
                             <span>Total Pagado</span>
-                            <span>${totalPrice.toFixed(2)}</span>
+                            <span>€{totalPrice.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
