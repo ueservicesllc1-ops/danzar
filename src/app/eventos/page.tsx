@@ -40,7 +40,22 @@ const generateSeats = (): Seat[] => {
   const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
   const totalSeatsPerRow = 24; // 24 asientos por fila total (12 por cada nave)
 
-  rows.forEach((row, rowIndex) => {
+  const manuallyReleasedSeats = new Set([
+    'B13',
+    'B14',
+    'B15',
+    'B16',
+    'B17',
+    'B18',
+    'B19',
+    'B20',
+    'B21',
+    'B22',
+    'B23',
+    'B24',
+  ]);
+
+  rows.forEach((row) => {
     // Todos los asientos son premium con precio único
     const category: SeatCategory = 'premium';
     const basePrice: number = 12; // Precio en euros
@@ -50,8 +65,11 @@ const generateSeats = (): Seat[] => {
       let status: SeatStatus = 'available';
       
       // Filas A y B están bloqueadas (grises)
-      if (row === 'A' || row === 'B') {
+      if (row === 'A') {
         status = 'occupied';
+      } else if (row === 'B') {
+        const seatId = `${row}${num}`;
+        status = manuallyReleasedSeats.has(seatId) ? 'available' : 'occupied';
       }
 
       seats.push({
