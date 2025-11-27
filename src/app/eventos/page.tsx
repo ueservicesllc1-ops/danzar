@@ -41,6 +41,8 @@ const generateSeats = (): Seat[] => {
   const totalSeatsPerRow = 24; // 24 asientos por fila total (12 por cada nave)
 
   const manuallyReleasedSeats = new Set([
+    'B11',
+    'B12',
     'B13',
     'B14',
     'B15',
