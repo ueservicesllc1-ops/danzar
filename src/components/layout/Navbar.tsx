@@ -3,16 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Shield, Ticket } from 'lucide-react';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  
-  // Ocultar dashboard en página principal y eventos
-  const hideDashboard = pathname === '/' || pathname === '/eventos';
 
   const handleSignOut = async () => {
     try {
@@ -120,31 +116,6 @@ export default function Navbar() {
                 {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
               </div>
             </div>
-
-            {/* Botón Dashboard - Oculto en página principal y eventos */}
-            {!hideDashboard && (
-              <Link href="/dashboard">
-                <button style={{
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  padding: '8px 16px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.backgroundColor = '#2563eb';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.backgroundColor = '#3b82f6';
-                }}>
-                  Dashboard
-                </button>
-              </Link>
-            )}
 
             {/* Botón Admin (visible para todos los usuarios logueados) */}
             <Link href="/admin/pin">
