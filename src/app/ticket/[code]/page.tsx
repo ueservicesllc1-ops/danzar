@@ -106,34 +106,54 @@ export default function TicketPage() {
       setLoading(true);
       setError('');
 
-      // Primero intentar cargar desde localStorage (offline)
+      // Si no hay conexión, intentar cargar desde localStorage
+      if (!isOnline) {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const tickets = JSON.parse(saved);
+            const savedTicket = tickets[codeUpper];
+            if (savedTicket) {
+              // Convertir createdAt de string a Date si es necesario
+              const ticketData = {
+                ...savedTicket,
+                createdAt: savedTicket.createdAt ? new Date(savedTicket.createdAt) : new Date()
+              };
+              setTicket(ticketData as TicketData);
+              setLoadedFromCache(true);
+              setLoading(false);
+              console.log('Ticket cargado desde localStorage (modo offline)');
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Error cargando ticket desde cache:', err);
+        }
+        setError('Sin conexión a internet y el ticket no está guardado. Consulta tu ticket con internet para guardarlo.');
+        setLoading(false);
+        return;
+      }
+
+      // Si hay conexión, mostrar temporalmente el cache pero SIEMPRE verificar la base de datos
+      let cachedTicket: TicketData | null = null;
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const tickets = JSON.parse(saved);
           const savedTicket = tickets[codeUpper];
           if (savedTicket) {
-            // Convertir createdAt de string a Date si es necesario
-            const ticketData = {
+            cachedTicket = {
               ...savedTicket,
               createdAt: savedTicket.createdAt ? new Date(savedTicket.createdAt) : new Date()
-            };
-            setTicket(ticketData as TicketData);
+            } as TicketData;
+            // Mostrar temporalmente el cache mientras se carga desde la base de datos
+            setTicket(cachedTicket);
             setLoadedFromCache(true);
-            setLoading(false);
-            console.log('Ticket cargado desde localStorage (modo offline)');
-            return;
+            console.log('Ticket temporal cargado desde cache, verificando base de datos...');
           }
         }
       } catch (err) {
         console.error('Error cargando ticket desde cache:', err);
-      }
-
-      // Si no está guardado y no hay internet, mostrar error
-      if (!isOnline) {
-        setError('Sin conexión a internet y el ticket no está guardado. Consulta tu ticket con internet para guardarlo.');
-        setLoading(false);
-        return;
       }
 
       // Buscar en Firestore y escuchar actualizaciones en tiempo real
@@ -147,13 +167,23 @@ export default function TicketPage() {
         const querySnapshot = await getDocs(ticketsQuery);
 
         if (querySnapshot.empty) {
+          // Si no se encuentra en la BD pero hay cache, mantener el cache
+          if (cachedTicket) {
+            console.log('Ticket no encontrado en BD, usando cache');
+            setLoading(false);
+            return;
+          }
           setError('No se encontró ningún ticket con ese código. Verifica que el código sea correcto.');
           setLoading(false);
         } else {
           const docSnapshot = querySnapshot.docs[0];
           const ticketId = docSnapshot.id;
           const ticketData = { id: ticketId, ...docSnapshot.data() } as TicketData;
+          
+          // Siempre actualizar con los datos más recientes de la base de datos
+          console.log('Ticket cargado desde Firestore. Estado:', ticketData.status);
           setTicket(ticketData);
+          setLoadedFromCache(false);
           
           // Guardar automáticamente para acceso offline
           try {
@@ -189,8 +219,10 @@ export default function TicketPage() {
           unsubscribeFn = onSnapshot(ticketRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
               const updatedData = { id: docSnapshot.id, ...docSnapshot.data() } as TicketData;
-              console.log('Ticket actualizado en tiempo real:', updatedData.status);
+              console.log('Ticket actualizado en tiempo real. Estado:', updatedData.status);
+              console.log('Datos completos del ticket:', JSON.stringify(updatedData, null, 2));
               setTicket(updatedData);
+              setLoadedFromCache(false);
               
               // Actualizar también localStorage con los nuevos datos
               try {
@@ -460,39 +492,52 @@ export default function TicketPage() {
                   )}
                   
                   {/* Estado del ticket con efecto metálico */}
-                  <div 
-                    className="metallic-border-gold rounded-lg p-4" 
-                    style={{ 
-                      marginTop: '8px',
-                      background: ticket.status === 'approved' 
-                        ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.4) 100%)'
-                        : ticket.status === 'used'
-                        ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.4) 100%)'
-                        : 'linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%)',
-                      boxShadow: '0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.1)'
-                    }}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle 
-                        className="w-6 h-6" 
+                  {(() => {
+                    // Normalizar el estado: puede venir como 'approved', 'verified', 'pending', 'used', etc.
+                    const normalizedStatus = ticket.status?.toLowerCase() || 'pending';
+                    const isApproved = normalizedStatus === 'approved' || normalizedStatus === 'verified';
+                    const isUsed = normalizedStatus === 'used';
+                    const isPending = normalizedStatus === 'pending';
+                    
+                    // Log para debugging
+                    console.log('Estado del ticket:', ticket.status, 'Normalizado:', normalizedStatus, 'Es aprobado:', isApproved);
+                    
+                    return (
+                      <div 
+                        className="metallic-border-gold rounded-lg p-4" 
                         style={{ 
-                          color: ticket.status === 'approved' ? '#22c55e' : ticket.status === 'used' ? '#f97316' : '#eab308',
-                          filter: 'drop-shadow(0 0 8px currentColor)'
-                        }} 
-                      />
-                      <span 
-                        className="text-lg font-bold"
-                        style={{
-                          color: '#000000',
-                          textShadow: 'none'
+                          marginTop: '8px',
+                          background: isApproved
+                            ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.4) 100%)'
+                            : isUsed
+                            ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(234, 88, 12, 0.4) 100%)'
+                            : 'linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%)',
+                          boxShadow: '0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.1)'
                         }}
                       >
-                        {ticket.status === 'pending' ? 'PENDIENTE' : 
-                         ticket.status === 'used' ? 'REDIMIDO' : 
-                         ticket.status === 'approved' ? 'VERIFICADO' : 'VERIFICADO'}
-                      </span>
-                    </div>
-                  </div>
+                        <div className="flex items-center justify-center gap-2">
+                          <CheckCircle 
+                            className="w-6 h-6" 
+                            style={{ 
+                              color: isApproved ? '#22c55e' : isUsed ? '#f97316' : '#eab308',
+                              filter: 'drop-shadow(0 0 8px currentColor)'
+                            }} 
+                          />
+                          <span 
+                            className="text-lg font-bold"
+                            style={{
+                              color: '#000000',
+                              textShadow: 'none'
+                            }}
+                          >
+                            {isPending ? 'PENDIENTE' : 
+                             isUsed ? 'REDIMIDO' : 
+                             isApproved ? 'VERIFICADO' : 'PENDIENTE'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 {/* Franja negra abajo */}

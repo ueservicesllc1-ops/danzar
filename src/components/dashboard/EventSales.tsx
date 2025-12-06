@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Ticket, DollarSign, Users, QrCode, CheckCircle, Eye, Download, Trash2 } from 'lucide-react';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface Sale {
   id: string;
@@ -25,6 +26,7 @@ interface Sale {
     [key: string]: unknown;
   };
   qrCode?: string;
+  confirmationCode?: string;
   status?: string;
   used?: boolean;
   redeemedCount?: number;
@@ -32,11 +34,17 @@ interface Sale {
   [key: string]: unknown;
 }
 
+const DELETE_PIN = '1619';
+
 export default function EventSales() {
+  const router = useRouter();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [saleToDelete, setSaleToDelete] = useState<{ id: string; customerName: string } | null>(null);
 
   useEffect(() => {
     loadSales();
@@ -84,26 +92,57 @@ export default function EventSales() {
     }
   };
 
-  const handleDeleteSale = async (id: string, customerName: string) => {
+  const handleDeleteClick = (id: string, customerName: string) => {
+    setSaleToDelete({ id, customerName });
+    setShowPinModal(true);
+    setPinInput('');
+  };
+
+  const handlePinSubmit = async () => {
+    if (pinInput !== DELETE_PIN) {
+      alert('PIN incorrecto. No se puede eliminar la entrada.');
+      setPinInput('');
+      return;
+    }
+
+    if (!saleToDelete) return;
+
     const confirmed = window.confirm(
-      `¿Estás seguro de que deseas eliminar la entrada vendida de ${customerName}?\n\nEsta acción no se puede deshacer.`
+      `¿Estás seguro de que deseas eliminar la entrada vendida de ${saleToDelete.customerName}?\n\nEsta acción no se puede deshacer.`
     );
     
-    if (!confirmed) return;
+    if (!confirmed) {
+      setShowPinModal(false);
+      setSaleToDelete(null);
+      setPinInput('');
+      return;
+    }
 
     try {
-      const ticketRef = doc(db, 'tickets', id);
+      const ticketRef = doc(db, 'tickets', saleToDelete.id);
       await deleteDoc(ticketRef);
       alert('Entrada vendida eliminada exitosamente.');
       loadSales();
-      if (selectedSale?.id === id) {
+      if (selectedSale?.id === saleToDelete.id) {
         setShowDetails(false);
         setSelectedSale(null);
       }
     } catch (error) {
       console.error('Error eliminando entrada:', error);
       alert('Error al eliminar la entrada. Contacta soporte.');
+    } finally {
+      setShowPinModal(false);
+      setSaleToDelete(null);
+      setPinInput('');
     }
+  };
+
+  const handleViewTicket = (confirmationCode: string | undefined) => {
+    if (!confirmationCode) {
+      alert('No hay código de confirmación disponible para este ticket.');
+      return;
+    }
+    router.push(`/ticket/${confirmationCode}`);
   };
 
   if (loading) {
@@ -349,7 +388,7 @@ export default function EventSales() {
                       ) : null;
                     })()}
                     <button
-                      onClick={() => handleDeleteSale(
+                      onClick={() => handleDeleteClick(
                         sale.id,
                         `${sale.customer?.firstName || ''} ${sale.customer?.lastName || ''}`.trim() || 'Cliente'
                       )}
@@ -378,9 +417,28 @@ export default function EventSales() {
                       <Trash2 size={16} />
                       Eliminar
                     </button>
-                    <div title={sale.qrCode}>
-                      <QrCode size={24} color="#6b7280" />
-                    </div>
+                    <button
+                      onClick={() => handleViewTicket(sale.confirmationCode)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                      }}
+                      title={`Ver ticket 4D - ${sale.confirmationCode || 'N/A'}`}
+                    >
+                      <QrCode size={24} color="#3b82f6" />
+                    </button>
                   </div>
                 </motion.div>
               );
@@ -523,10 +581,11 @@ export default function EventSales() {
                   )}
                   <button
                     onClick={() => {
-                      handleDeleteSale(
+                      handleDeleteClick(
                         selectedSale.id,
                         `${selectedSale.customer?.firstName || ''} ${selectedSale.customer?.lastName || ''}`.trim() || 'Cliente'
                       );
+                      setShowDetails(false);
                     }}
                     style={{
                       width: '100%',
@@ -553,6 +612,147 @@ export default function EventSales() {
                   >
                     <Trash2 size={20} />
                     Eliminar Entrada
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de PIN para Eliminar */}
+      <AnimatePresence>
+        {showPinModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setShowPinModal(false);
+                setSaleToDelete(null);
+                setPinInput('');
+              }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px'
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  padding: '30px',
+                  maxWidth: '400px',
+                  width: '100%'
+                }}
+              >
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#1f2937',
+                  marginBottom: '8px'
+                }}>
+                  🔒 Confirmar Eliminación
+                </h3>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  marginBottom: '20px'
+                }}>
+                  Ingresa el PIN para eliminar la entrada de {saleToDelete?.customerName || 'este cliente'}.
+                </p>
+                <input
+                  type="password"
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handlePinSubmit();
+                    }
+                  }}
+                  placeholder="Ingresa el PIN"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    marginBottom: '20px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    textAlign: 'center',
+                    letterSpacing: '4px',
+                    fontFamily: 'monospace'
+                  }}
+                  autoFocus
+                />
+                <div style={{
+                  display: 'flex',
+                  gap: '10px'
+                }}>
+                  <button
+                    onClick={() => {
+                      setShowPinModal(false);
+                      setSaleToDelete(null);
+                      setPinInput('');
+                    }}
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'transparent',
+                      color: '#6b7280',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handlePinSubmit}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#dc2626';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#ef4444';
+                    }}
+                  >
+                    Confirmar
                   </button>
                 </div>
               </motion.div>
